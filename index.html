@@ -190,7 +190,7 @@
         
         // Close menu when clicking outside
         document.addEventListener('click', (e) => {
-          if (!dropdownMenu.contains(e.target) && e.target !== menuBtn) {
+          if (!dropdownMenu.contains(e.target) && !menuBtn.contains(e.target)) {
             dropdownMenu.classList.remove('active');
           }
         });
