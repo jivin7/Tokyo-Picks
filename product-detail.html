@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Detail - Tokyo Picks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <button class="icon-btn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <button class="icon-btn cart-btn" id="cart-btn" aria-label="Cart" title="Cart">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 12.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="cart-count" id="cart-count" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="product-detail-page">
+    <div class="breadcrumb">
+      <a href="index.html" class="breadcrumb-link">Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Product Detail</span>
+    </div>
+
+    <div class="product-detail-container">
+      <div class="product-image-section">
+        <img id="product-main-image" src="" alt="Product" class="main-product-image">
+      </div>
+      
+      <div class="product-info-section">
+        <h1 id="product-title" class="product-detail-title">Product Title</h1>
+        <div class="product-rating">
+          <div class="stars">★★★★★</div>
+          <span class="rating-text">(4.5)</span>
+        </div>
+        <div class="product-price-section">
+          <span id="product-old-price" class="old-price">LE 450.00 EGP</span>
+          <span id="product-current-price" class="current-price">LE 325.00 EGP</span>
+        </div>
+        <p class="product-description">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+        
+        <div class="product-options">
+          <div class="size-selector">
+            <label>Size:</label>
+            <div class="size-options">
+              <button class="size-btn active">S</button>
+              <button class="size-btn">M</button>
+              <button class="size-btn">L</button>
+              <button class="size-btn">XL</button>
+            </div>
+          </div>
+          
+          <div class="color-selector">
+            <label>Color:</label>
+            <div class="color-options">
+              <button class="color-btn active" style="background: #ff6b6b;"></button>
+              <button class="color-btn" style="background: #4ecdc4;"></button>
+              <button class="color-btn" style="background: #45b7d1;"></button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="quantity-selector">
+          <label>Quantity:</label>
+          <div class="quantity-controls">
+            <button class="qty-btn" id="qty-minus">-</button>
+            <span class="qty-display" id="qty-value">1</span>
+            <button class="qty-btn" id="qty-plus">+</button>
+          </div>
+        </div>
+        
+        <div class="product-actions">
+          <button class="add-to-cart-main">Add to Cart</button>
+          <button class="buy-now">Buy Now</button>
+        </div>
+        
+        <div class="product-features">
+          <div class="feature">
+            <span class="feature-icon">🚚</span>
+            <span>Free shipping on orders over $50</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">↩️</span>
+            <span>30-day return policy</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">🔒</span>
+            <span>Secure payment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Get product data from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const productImage = urlParams.get('image');
+    const productTitle = urlParams.get('title');
+    const oldPrice = urlParams.get('oldPrice');
+    const currentPrice = urlParams.get('currentPrice');
+
+    // Update product details
+    if (productImage) {
+      document.getElementById('product-main-image').src = productImage;
+    }
+    if (productTitle) {
+      document.getElementById('product-title').textContent = productTitle;
+    }
+    if (oldPrice) {
+      document.getElementById('product-old-price').textContent = oldPrice;
+    }
+    if (currentPrice) {
+      document.getElementById('product-current-price').textContent = currentPrice;
+    }
+
+    // Quantity controls
+    let quantity = 1;
+    const qtyDisplay = document.getElementById('qty-value');
+    const qtyMinus = document.getElementById('qty-minus');
+    const qtyPlus = document.getElementById('qty-plus');
+
+    qtyMinus.addEventListener('click', () => {
+      if (quantity > 1) {
+        quantity--;
+        qtyDisplay.textContent = quantity;
+      }
+    });
+
+    qtyPlus.addEventListener('click', () => {
+      quantity++;
+      qtyDisplay.textContent = quantity;
+    });
+
+    // Size selection
+    document.querySelectorAll('.size-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Color selection
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function getStoredCartItems() {
+      try {
+        const saved = localStorage.getItem('tokyo_cart_items');
+        return saved ? JSON.parse(saved) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function setStoredCartItems(items) {
+      localStorage.setItem('tokyo_cart_items', JSON.stringify(items));
+    }
+
+    function updateCartDot() {
+      const cartCount = document.getElementById('cart-count');
+      if (!cartCount) return;
+      const items = getStoredCartItems();
+      const hasItems = Array.isArray(items) && items.some(item => (item.quantity || 0) > 0);
+      cartCount.classList.toggle('show', hasItems);
+    }
+
+    // Add to cart
+    document.querySelector('.add-to-cart-main').addEventListener('click', () => {
+      const items = getStoredCartItems();
+      const title = document.getElementById('product-title')?.textContent?.trim() || 'Product';
+      const price = document.getElementById('product-current-price')?.textContent?.trim() || '';
+      const image = document.getElementById('product-main-image')?.getAttribute('src') || '';
+      const existing = items.find(item => item.title === title);
+
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        items.push({ title, price, image, quantity });
+      }
+
+      setStoredCartItems(items);
+      updateCartDot();
+      window.location.href = 'index.html?openCart=1';
+    });
+
+    // Buy now
+    document.querySelector('.buy-now').addEventListener('click', () => {
+      alert('Proceeding to checkout...');
+    });
+
+    const cartBtn = document.getElementById('cart-btn');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', () => {
+        window.location.href = 'index.html?openCart=1';
+      });
+    }
+
+    updateCartDot();
+  </script>
+</body>
+</html>
+

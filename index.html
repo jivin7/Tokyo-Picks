@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokyo's Web</title>
+  <link rel="stylesheet" href="style.css">
+  </head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <div class="menu-container">
+        <button class="icon-btn" id="menu-btn" aria-label="Menu" title="Menu">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="dropdown-menu">
+          <a href="index.html" class="menu-item">Home</a>
+          <a href="#" class="menu-item" id="products-menu-link">Products</a>
+          <a href="#" class="menu-item">About</a>
+          <a href="#" class="menu-item">Contact</a>
+        </div>
+      </div>
+      <button class="icon-btn cart-btn" id="cart-btn" aria-label="Cart" title="Cart">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 12.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="cart-count" id="cart-count" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-card">
+        <h1>your vibe<br>your outfit.</h1>
+        <button class="cta" id="shop-now">Shop Now</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <img src="WhatsApp Image 2026-05-04 at 12.07.17 PM.jpeg" alt="Hero" class="hero-image">
+    </div>
+  </section>
+  <section id="products" class="products">
+    <div class="products-header">
+      <h2>All Products</h2>
+      <div class="products-sub">
+        <div class="left-sub">
+          <span>Filter:</span>
+          <button class="filter-btn" type="button" id="availability-btn">Availability</button>
+          <button class="filter-btn" type="button" id="price-btn">Price</button>
+        </div>
+        <div class="right-sub">Sort by: <span class="muted">Date, new to old</span> • <span class="muted">24 products</span></div>
+      </div>
+      <div class="price-popover" id="price-popover" role="dialog" aria-hidden="true" aria-labelledby="price-title">
+        <div class="price-popover-header">
+          <div id="price-title">The highest price is LE 300.00</div>
+          <button class="reset-btn" type="button" id="price-reset">Reset</button>
+        </div>
+        <div class="price-divider"></div>
+        <form class="price-form" onsubmit="return false;">
+          <label class="price-field">
+            <span class="currency">EGP</span>
+            <input type="number" min="0" step="10" placeholder="From" id="price-from">
+          </label>
+          <label class="price-field">
+            <span class="currency">EGP</span>
+            <input type="number" min="0" step="10" placeholder="To" id="price-to">
+          </label>
+        </form>
+      </div>
+    </div>
+    <div class="products-grid">
+      <article class="product-card" data-price="325">
+        <span class="badge">Sale</span>
+        <div class="media">
+          <!-- Put your image URL in src below -->
+          <img class="product-image" src="WhatsApp Image 2026-05-04 at 11.46.30 AM.jpeg" alt="Product">
+          <div class="image-placeholder">Add image</div>
+        </div>
+        <h3 class="product-title">Yellow-Tank Top Short Sleeve</h3>
+        <div class="price-row">
+          <span class="price-old">LE 450.00 EGP</span>
+          <span class="price">LE 325.00 EGP</span>
+        </div>
+        <button class="add-card-btn" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card" data-price="425">
+        <span class="badge">Sale</span>
+        <div class="media">
+          <!-- Put your image URL in src below -->
+          <img class="product-image" src="WhatsApp Image 2026-05-04 at 11.45.41 AM.jpeg" alt="Product">
+          <div class="image-placeholder">Add image</div>
+        </div>
+        <h3 class="product-title">Tiger Pants</h3>
+        <div class="price-row">
+          <span class="price-old">LE 750.00 EGP</span>
+          <span class="price">LE 425.00 EGP</span>
+        </div>
+        <button class="add-card-btn" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card" data-price="375">
+        <span class="badge">Sale</span>
+        <div class="media">
+          <!-- Put your image URL in src below -->
+          <img class="product-image" src="WhatsApp Image 2026-05-04 at 11.45.18 AM.jpeg" alt="Product">
+          <div class="image-placeholder">Add image</div>
+        </div>
+        <h3 class="product-title">Zipper Short-sleeve Basic Top</h3>
+        <div class="price-row">
+          <span class="price-old">LE 600.00 EGP</span>
+          <span class="price">LE 375.00 EGP</span>
+        </div>
+        <button class="add-card-btn" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card" data-price="350">
+        <span class="badge">Sale</span>
+        <div class="media">
+          <!-- Put your image URL in src below -->
+          <img class="product-image" src="WhatsApp Image 2026-05-04 at 11.44.28 AM.jpeg" alt="Product">
+          <div class="image-placeholder">Add image</div>
+        </div>
+        <h3 class="product-title">Zipper Cut-sleeve Basic Top</h3>
+        <div class="price-row">
+          <span class="price-old">LE 580.00 EGP</span>
+          <span class="price">LE 350.00 EGP</span>
+        </div>
+        <button class="add-card-btn" type="button">Add to Cart</button>
+      </article>
+    </div>
+  </section>
+  <div class="cart-popover" id="cart-popover" aria-hidden="true">
+    <div class="cart-popover-header">
+      <h3>Your Cart</h3>
+      <button type="button" class="cart-close" id="cart-close" aria-label="Close cart">&times;</button>
+    </div>
+    <div id="cart-items" class="cart-items">
+      <p class="empty-cart-text">Your cart is empty.</p>
+    </div>
+  </div>
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="product-modal" aria-hidden="true">
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-image-container">
+        <img class="modal-product-image" src="" alt="Product detail">
+      </div>
+      <div class="modal-actions">
+        <button class="add-to-cart-btn">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const messages = [
+        'Welcome to our store',
+        '25% off summer Discount ',
+      ];
+      const el = document.querySelector('.announcement-text');
+      let index = 0;
+
+      function rotateMessage() {
+        el.classList.remove('slide-in');
+        el.classList.add('slide-out');
+        setTimeout(() => {
+          index = (index + 1) % messages.length;
+          el.textContent = messages[index];
+          el.classList.remove('slide-out');
+          el.classList.add('slide-in');
+        }, 300);
+      }
+
+      setInterval(rotateMessage, 3000);
+      
+      // Menu dropdown functionality
+      const menuBtn = document.getElementById('menu-btn');
+      const dropdownMenu = document.getElementById('dropdown-menu');
+      
+      if (menuBtn && dropdownMenu) {
+        menuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdownMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!dropdownMenu.contains(e.target) && e.target !== menuBtn) {
+            dropdownMenu.classList.remove('active');
+          }
+        });
+        
+        // Close menu when pressing Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            dropdownMenu.classList.remove('active');
+          }
+        });
+        
+        // Products menu link scroll to products section
+        const productsMenuLink = document.getElementById('products-menu-link');
+        if (productsMenuLink) {
+          productsMenuLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const productsSection = document.getElementById('products');
+            if (productsSection) {
+              productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              dropdownMenu.classList.remove('active'); // Close menu after clicking
+            }
+          });
+        }
+      }
+      
+      // Smooth scroll to products on CTA
+      const cta = document.getElementById('shop-now');
+      const products = document.getElementById('products');
+      if (cta && products) {
+        cta.addEventListener('click', () => {
+          products.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+
+      // Price popover toggle and placement
+      const priceBtn = document.getElementById('price-btn');
+      const popover = document.getElementById('price-popover');
+      function closePopoverOnOutsideClick(e) {
+        if (!popover.contains(e.target) && e.target !== priceBtn) {
+          popover.setAttribute('aria-hidden', 'true');
+          document.removeEventListener('click', closePopoverOnOutsideClick);
+        }
+      }
+      if (priceBtn && popover) {
+        priceBtn.addEventListener('click', (e) => {
+          const rect = priceBtn.getBoundingClientRect();
+          const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          popover.style.left = rect.left + scrollLeft + 'px';
+          popover.style.top = rect.bottom + scrollTop + 'px';
+          const hidden = popover.getAttribute('aria-hidden') !== 'false';
+          popover.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+          if (hidden) {
+            setTimeout(() => document.addEventListener('click', closePopoverOnOutsideClick), 0);
+          }
+        });
+      }
+
+      const reset = document.getElementById('price-reset');
+      if (reset) {
+        reset.addEventListener('click', () => {
+          const from = document.getElementById('price-from');
+          const to = document.getElementById('price-to');
+          if (from) from.value = '';
+          if (to) to.value = '';
+          // show all products after reset
+          document.querySelectorAll('.product-card').forEach(card => {
+            card.style.display = '';
+          });
+        });
+      }
+
+      // Filter logic
+      function applyPriceFilter() {
+        const fromVal = parseFloat(document.getElementById('price-from')?.value || '');
+        const toVal = parseFloat(document.getElementById('price-to')?.value || '');
+        const hasFrom = !Number.isNaN(fromVal);
+        const hasTo = !Number.isNaN(toVal);
+        document.querySelectorAll('.product-card').forEach(card => {
+          const price = parseFloat(card.getAttribute('data-price') || '0');
+          let show = true;
+          if (hasFrom && price < fromVal) show = false;
+          if (hasTo && price > toVal) show = false;
+          card.style.display = show ? '' : 'none';
+        });
+      }
+      const fromInput = document.getElementById('price-from');
+      const toInput = document.getElementById('price-to');
+      if (fromInput) fromInput.addEventListener('input', applyPriceFilter);
+      if (toInput) toInput.addEventListener('input', applyPriceFilter);
+
+      // Product modal functionality
+      const modal = document.getElementById('product-modal');
+      const modalImage = document.querySelector('.modal-product-image');
+      const closeBtn = document.querySelector('.modal-close');
+      
+      // Open product detail page when clicking on product image
+      document.querySelectorAll('.product-image').forEach(img => {
+        img.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const card = img.closest('.product-card');
+          const productTitle = card.querySelector('.product-title').textContent;
+          const oldPrice = card.querySelector('.price-old').textContent;
+          const currentPrice = card.querySelector('.price').textContent;
+          
+          if (img.src) {
+            const params = new URLSearchParams({
+              image: img.src,
+              title: productTitle,
+              oldPrice: oldPrice,
+              currentPrice: currentPrice
+            });
+            window.location.href = `product-detail.html?${params.toString()}`;
+          }
+        });
+      });
+      
+      // Close modal
+      function closeModal() {
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (modal) modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      
+      // Add to cart functionality
+      const addToCartBtn = document.querySelector('.add-to-cart-btn');
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', () => {
+          alert('Added to cart!');
+          closeModal();
+        });
+      }
+
+      const cartBtn = document.getElementById('cart-btn');
+      const cartCount = document.getElementById('cart-count');
+      const cartPopover = document.getElementById('cart-popover');
+      const cartClose = document.getElementById('cart-close');
+      const cartItemsContainer = document.getElementById('cart-items');
+      const cartItems = (() => {
+        try {
+          const saved = localStorage.getItem('tokyo_cart_items');
+          return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+          return [];
+        }
+      })();
+
+      function renderCart() {
+        const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.classList.toggle('show', totalItems > 0);
+
+        if (!cartItems.length) {
+          cartItemsContainer.innerHTML = '<p class="empty-cart-text">Your cart is empty.</p>';
+          return;
+        }
+
+        cartItemsContainer.innerHTML = cartItems.map(item => `
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.title}">
+            <div class="cart-item-info">
+              <p class="cart-item-title">${item.title}</p>
+              <p class="cart-item-price">${item.price}</p>
+              <p class="cart-item-qty">Qty: ${item.quantity}</p>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function addToCart(item) {
+        const existing = cartItems.find(cartItem => cartItem.title === item.title);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cartItems.push({ ...item, quantity: 1 });
+        }
+        localStorage.setItem('tokyo_cart_items', JSON.stringify(cartItems));
+        renderCart();
+        if (cartPopover) cartPopover.setAttribute('aria-hidden', 'false');
+      }
+
+      document.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('.add-card-btn');
+        if (!addBtn) return;
+        const card = addBtn.closest('.product-card');
+        if (!card) return;
+        const item = {
+          title: card.querySelector('.product-title')?.textContent?.trim() || 'Product',
+          price: card.querySelector('.price')?.textContent?.trim() || '',
+          image: card.querySelector('.product-image')?.getAttribute('src') || ''
+        };
+        addToCart(item);
+      });
+
+      function closeCartPopover() {
+        if (cartPopover) cartPopover.setAttribute('aria-hidden', 'true');
+      }
+
+      if (cartBtn && cartPopover) {
+        cartBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const hidden = cartPopover.getAttribute('aria-hidden') !== 'false';
+          cartPopover.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+        });
+      }
+
+      if (cartClose) {
+        cartClose.addEventListener('click', closeCartPopover);
+      }
+
+      document.addEventListener('click', (e) => {
+        if (!cartPopover || !cartBtn) return;
+        if (!cartPopover.contains(e.target) && !cartBtn.contains(e.target)) {
+          closeCartPopover();
+        }
+      });
+
+      renderCart();
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('openCart') === '1' && cartPopover) {
+        cartPopover.setAttribute('aria-hidden', 'false');
+      }
+    })();
+  </script>
+</body>
+</html>
+
