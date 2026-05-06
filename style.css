@@ -1098,9 +1098,8 @@ p {
   }
 
   .products-grid {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(220px, 78vw);
+    display: flex !important;
+    flex-wrap: nowrap !important;
     gap: 14px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1121,6 +1120,8 @@ p {
   .product-card {
     border-radius: 14px;
     padding: 12px;
+    flex: 0 0 78vw;
+    max-width: 340px;
     scroll-snap-align: start;
   }
 
@@ -1177,11 +1178,14 @@ p {
   }
 
   .products-grid {
-    grid-auto-columns: minmax(220px, 86vw);
+    display: flex !important;
+    flex-wrap: nowrap !important;
   }
 
   .product-card {
     padding: 14px;
+    flex-basis: 86vw;
+    max-width: none;
   }
 
   .cart-popover {
