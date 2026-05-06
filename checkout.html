@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Tokyo Picks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <a href="index.html" class="icon-btn checkout-back-btn" aria-label="Back to home" title="Back to home">Back</a>
+    </div>
+  </header>
+
+  <main class="checkout-page">
+    <section class="checkout-items-panel">
+      <h1>Your Cart</h1>
+      <div id="checkout-items" class="checkout-items"></div>
+    </section>
+
+    <aside class="checkout-summary-panel">
+      <h2>Order Summary</h2>
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="summary-subtotal">LE 0.00 EGP</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span id="summary-shipping">LE 0.00 EGP</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span id="summary-total">LE 40.00 EGP</span>
+      </div>
+      <button id="checkout-btn" class="checkout-btn" type="button">Checkout</button>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      const itemsContainer = document.getElementById('checkout-items');
+      const subtotalEl = document.getElementById('summary-subtotal');
+      const shippingEl = document.getElementById('summary-shipping');
+      const totalEl = document.getElementById('summary-total');
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const SHIPPING = 0;
+
+      function getStoredCartItems() {
+        try {
+          const saved = localStorage.getItem('tokyo_cart_items');
+          return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function setStoredCartItems(items) {
+        localStorage.setItem('tokyo_cart_items', JSON.stringify(items));
+      }
+
+      function parsePrice(priceText) {
+        const numeric = String(priceText || '').replace(/[^\d.]/g, '');
+        return parseFloat(numeric || '0');
+      }
+
+      function money(value) {
+        return `LE ${value.toFixed(2)} EGP`;
+      }
+
+      function renderCheckout() {
+        const items = getStoredCartItems();
+        shippingEl.textContent = money(SHIPPING);
+        if (!items.length) {
+          itemsContainer.innerHTML = '<p class="checkout-empty">Your cart is empty. <a href="index.html">Go shopping</a></p>';
+          subtotalEl.textContent = money(0);
+          totalEl.textContent = money(SHIPPING);
+          checkoutBtn.disabled = true;
+          return;
+        }
+
+        let subtotal = 0;
+        itemsContainer.innerHTML = items.map((item, index) => {
+          const unitPrice = parsePrice(item.price);
+          const quantity = Number(item.quantity || 1);
+          const lineTotal = unitPrice * quantity;
+          subtotal += lineTotal;
+
+          return `
+            <article class="checkout-item">
+              <button class="checkout-remove-btn" type="button" data-index="${index}" aria-label="Remove product">&times;</button>
+              <img src="${item.image || ''}" alt="${item.title || 'Product'}">
+              <div class="checkout-item-info">
+                <h3>${item.title || 'Product'}</h3>
+                <p>${item.price || ''}</p>
+                <p>Qty: ${quantity}</p>
+                <p class="line-total">${money(lineTotal)}</p>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        subtotalEl.textContent = money(subtotal);
+        totalEl.textContent = money(subtotal + SHIPPING);
+        checkoutBtn.disabled = false;
+      }
+
+      checkoutBtn.addEventListener('click', () => {
+        alert('Order placed successfully!');
+        localStorage.removeItem('tokyo_cart_items');
+        renderCheckout();
+      });
+
+      itemsContainer.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('.checkout-remove-btn');
+        if (!removeBtn) return;
+        const index = Number(removeBtn.getAttribute('data-index'));
+        const items = getStoredCartItems();
+        if (Number.isNaN(index) || index < 0 || index >= items.length) return;
+        items.splice(index, 1);
+        setStoredCartItems(items);
+        renderCheckout();
+      });
+
+      renderCheckout();
+    })();
+  </script>
+</body>
+</html>

@@ -144,6 +144,14 @@
       <p class="empty-cart-text">Your cart is empty.</p>
     </div>
   </div>
+  <div class="cart-toast" id="cart-toast" aria-hidden="true">
+    <img id="cart-toast-image" src="" alt="Added product">
+    <div class="cart-toast-info">
+      <p class="cart-toast-label">Added to cart</p>
+      <p class="cart-toast-title" id="cart-toast-title"></p>
+      <p class="cart-toast-price" id="cart-toast-price"></p>
+    </div>
+  </div>
   <!-- Product Detail Modal -->
   <div class="modal-overlay" id="product-modal" aria-hidden="true">
     <div class="modal-content">
@@ -335,6 +343,11 @@
       const cartPopover = document.getElementById('cart-popover');
       const cartClose = document.getElementById('cart-close');
       const cartItemsContainer = document.getElementById('cart-items');
+      const cartToast = document.getElementById('cart-toast');
+      const cartToastImage = document.getElementById('cart-toast-image');
+      const cartToastTitle = document.getElementById('cart-toast-title');
+      const cartToastPrice = document.getElementById('cart-toast-price');
+      let cartToastTimer;
       const cartItems = (() => {
         try {
           const saved = localStorage.getItem('tokyo_cart_items');
@@ -374,7 +387,19 @@
         }
         localStorage.setItem('tokyo_cart_items', JSON.stringify(cartItems));
         renderCart();
-        if (cartPopover) cartPopover.setAttribute('aria-hidden', 'false');
+        showCartToast(item);
+      }
+
+      function showCartToast(item) {
+        if (!cartToast || !cartToastImage || !cartToastTitle || !cartToastPrice) return;
+        cartToastImage.src = item.image || '';
+        cartToastTitle.textContent = item.title || 'Product';
+        cartToastPrice.textContent = item.price || '';
+        cartToast.setAttribute('aria-hidden', 'false');
+        clearTimeout(cartToastTimer);
+        cartToastTimer = setTimeout(() => {
+          cartToast.setAttribute('aria-hidden', 'true');
+        }, 2200);
       }
 
       document.addEventListener('click', (e) => {
@@ -394,11 +419,10 @@
         if (cartPopover) cartPopover.setAttribute('aria-hidden', 'true');
       }
 
-      if (cartBtn && cartPopover) {
+      if (cartBtn) {
         cartBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const hidden = cartPopover.getAttribute('aria-hidden') !== 'false';
-          cartPopover.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+          window.location.href = 'checkout.html';
         });
       }
 
