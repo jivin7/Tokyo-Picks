@@ -492,9 +492,11 @@ body {
   }
 
   .products-grid {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 16px !important;
+    display: grid !important;
+    grid-template-rows: repeat(2, auto) !important;
+    grid-template-columns: repeat(4, calc(100vw - 46px)) !important;
+    grid-auto-flow: row !important;
+    gap: 14px !important;
     padding: 4px 16px 10px 16px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -514,9 +516,8 @@ body {
   .product-card {
     border-radius: 20px;
     padding: 18px;
-    flex: 0 0 calc(50% - 8px) !important;
-    max-width: calc(50% - 8px) !important;
     scroll-snap-align: start !important;
+    min-width: 0 !important;
   }
 
   .product-title {
@@ -568,9 +569,11 @@ body {
 }
 @media (max-width: 480px) {
   .products-grid { 
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 14px !important;
+    display: grid !important;
+    grid-template-rows: repeat(2, auto) !important;
+    grid-template-columns: repeat(4, calc(100vw - 40px)) !important;
+    grid-auto-flow: row !important;
+    gap: 12px !important;
     padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -579,10 +582,10 @@ body {
   }
 
   .product-card {
-    flex: 0 0 calc(50% - 7px) !important;
-    max-width: calc(50% - 7px) !important;
-    scroll-snap-align: start !important;
+    border-radius: 16px;
     padding: 16px;
+    scroll-snap-align: start !important;
+    min-width: 0 !important;
   }
 }
 
@@ -1473,9 +1476,11 @@ p {
   }
 
   .products-grid {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 14px !important;
+    display: grid !important;
+    grid-template-rows: repeat(2, auto) !important;
+    grid-template-columns: repeat(4, calc(100vw - 38px)) !important;
+    grid-auto-flow: row !important;
+    gap: 12px !important;
     padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -1484,10 +1489,10 @@ p {
   }
 
   .product-card {
+    border-radius: 16px;
     padding: 16px;
-    flex: 0 0 calc(50% - 7px) !important;
-    max-width: calc(50% - 7px) !important;
     scroll-snap-align: start !important;
+    min-width: 0 !important;
   }
 
   .cart-popover {
