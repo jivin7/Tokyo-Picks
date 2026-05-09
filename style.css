@@ -496,7 +496,8 @@ body {
     grid-template-rows: repeat(2, auto) !important;
     grid-template-columns: repeat(4, calc(100vw - 46px)) !important;
     grid-auto-flow: row !important;
-    gap: 14px !important;
+    column-gap: 14px !important;
+    row-gap: 1.5cm !important;
     padding: 4px 16px 10px 16px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -573,7 +574,8 @@ body {
     grid-template-rows: repeat(2, auto) !important;
     grid-template-columns: repeat(4, calc(100vw - 40px)) !important;
     grid-auto-flow: row !important;
-    gap: 12px !important;
+    column-gap: 12px !important;
+    row-gap: 1.2cm !important;
     padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -1480,7 +1482,8 @@ p {
     grid-template-rows: repeat(2, auto) !important;
     grid-template-columns: repeat(4, calc(100vw - 38px)) !important;
     grid-auto-flow: row !important;
-    gap: 12px !important;
+    column-gap: 12px !important;
+    row-gap: 1cm !important;
     padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
