@@ -494,8 +494,8 @@ body {
   .products-grid {
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 14px !important;
-    padding: 4px 8px 10px 8px !important;
+    gap: 16px !important;
+    padding: 4px 16px 10px 16px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scroll-snap-type: x mandatory !important;
@@ -512,13 +512,10 @@ body {
   }
 
   .product-card {
-    border-radius: 14px;
-    padding: 14px;
-    flex: 0 0 calc(25% - 10.5px) !important;
-    max-width: calc(25% - 10.5px) !important;
-  }
-
-  .product-card:nth-child(odd) {
+    border-radius: 20px;
+    padding: 18px;
+    flex: 0 0 calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
     scroll-snap-align: start !important;
   }
 
@@ -573,8 +570,8 @@ body {
   .products-grid { 
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 12px !important;
-    padding: 4px 6px 10px 6px !important;
+    gap: 14px !important;
+    padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scroll-snap-type: x mandatory !important;
@@ -582,13 +579,10 @@ body {
   }
 
   .product-card {
-    flex: 0 0 calc(25% - 9px) !important;
-    max-width: calc(25% - 9px) !important;
-    padding: 12px;
-  }
-
-  .product-card:nth-child(odd) {
+    flex: 0 0 calc(50% - 7px) !important;
+    max-width: calc(50% - 7px) !important;
     scroll-snap-align: start !important;
+    padding: 16px;
   }
 }
 
@@ -1481,8 +1475,8 @@ p {
   .products-grid {
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 12px !important;
-    padding: 4px 6px 10px 6px !important;
+    gap: 14px !important;
+    padding: 4px 14px 10px 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scroll-snap-type: x mandatory !important;
@@ -1490,12 +1484,9 @@ p {
   }
 
   .product-card {
-    padding: 12px;
-    flex: 0 0 calc(25% - 9px) !important;
-    max-width: calc(25% - 9px) !important;
-  }
-
-  .product-card:nth-child(odd) {
+    padding: 16px;
+    flex: 0 0 calc(50% - 7px) !important;
+    max-width: calc(50% - 7px) !important;
     scroll-snap-align: start !important;
   }
 
