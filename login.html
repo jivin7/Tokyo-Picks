@@ -96,25 +96,6 @@
     .auth-error.show {
       display: block;
     }
-    .auth-setup-notice {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 18px;
-      line-height: 1.45;
-      display: none;
-    }
-    .auth-setup-notice.show {
-      display: block;
-    }
-    .auth-setup-notice code {
-      font-size: 12px;
-      background: rgba(0,0,0,0.06);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
   </style>
 </head>
 <body>
@@ -130,11 +111,8 @@
     <div class="auth-card">
       <h1>Welcome Back</h1>
       <p class="auth-subtitle">Sign in to your account</p>
-      <div class="auth-setup-notice" id="firebase-setup-notice" role="note">
-        <strong>Log in on phone or another computer?</strong> Add your Firebase keys to <code>js/firebase-init.js</code> (see the comment at the top of that file). Until then, accounts only exist in this browser—not on other devices.
-      </div>
       <div class="auth-error" id="login-error"></div>
-      <form id="login-form" onsubmit="return false;">
+      <form id="login-form">
         <div class="auth-field">
           <label for="login-email">Email</label>
           <input type="email" id="login-email" placeholder="you@example.com" required>
@@ -155,7 +133,6 @@
   <script src="js/tokyo-auth.js"></script>
   <script>
     (function() {
-      const loginBtn = document.getElementById('login-btn');
       const errorEl = document.getElementById('login-error');
 
       function showError(msg) {
@@ -214,16 +191,27 @@
             window.location.href = 'index.html';
           })
           .catch(function (err) {
-            showError(TokyoPicksAuth.formatFirebaseError(err));
+            var msg =
+              typeof TokyoPicksAuth !== 'undefined' && TokyoPicksAuth.formatFirebaseError
+                ? TokyoPicksAuth.formatFirebaseError(err)
+                : (err && err.message) || 'Sign in failed.';
+            showError(msg);
           });
       }
 
-      var setupNotice = document.getElementById('firebase-setup-notice');
-      if (setupNotice && !window.TOKYO_FIREBASE_CONFIGURED) {
-        setupNotice.classList.add('show');
+      function sessionUsesFirebase() {
+        try {
+          return (
+            typeof TokyoPicksSession !== 'undefined' &&
+            TokyoPicksSession.usesFirebase &&
+            TokyoPicksSession.usesFirebase()
+          );
+        } catch (e) {
+          return false;
+        }
       }
 
-      loginBtn.addEventListener('click', function () {
+      function attemptLogin() {
         const email = document.getElementById('login-email').value.trim().toLowerCase();
         const password = document.getElementById('login-password').value;
 
@@ -232,12 +220,20 @@
           return;
         }
 
-        if (TokyoPicksSession.usesFirebase()) {
+        if (sessionUsesFirebase()) {
           firebaseLogin(email, password);
         } else {
           legacyLogin(email, password);
         }
-      });
+      }
+
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          attemptLogin();
+        });
+      }
     })();
   </script>
 </body>
