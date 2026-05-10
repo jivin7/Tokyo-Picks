@@ -499,11 +499,15 @@
     })();
   
 
+
     // Mobile: Split products into 2 independent scrolling rows
     (function() {
+      let isSetup = false;
+      let lastWidth = window.innerWidth;
+
       function setupMobileRows() {
-        // Remove existing mobile rows if any
-        document.querySelectorAll('.mobile-row').forEach(el => el.remove());
+        // Don't re-setup if already done
+        if (isSetup) return;
 
         const grid = document.querySelector('.products-grid');
         if (!grid) return;
@@ -520,65 +524,24 @@
         const row1Container = document.createElement('div');
         row1Container.className = 'mobile-row mobile-row-1';
         row1Container.setAttribute('aria-label', 'Product row 1');
-        row1.forEach(card => row1Container.appendChild(card.cloneNode(true)));
+        row1.forEach(card => row1Container.appendChild(card));
 
         // Create row 2 container
         const row2Container = document.createElement('div');
         row2Container.className = 'mobile-row mobile-row-2';
         row2Container.setAttribute('aria-label', 'Product row 2');
-        row2.forEach(card => row2Container.appendChild(card.cloneNode(true)));
+        row2.forEach(card => row2Container.appendChild(card));
 
         // Insert after the grid
         grid.parentNode.insertBefore(row1Container, grid.nextSibling);
         row1Container.parentNode.insertBefore(row2Container, row1Container.nextSibling);
 
-        // Re-attach click events for Add to Cart on cloned cards
-        document.querySelectorAll('.mobile-row .add-card-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const card = btn.closest('.product-card');
-            if (!card) return;
-            const item = {
-              title: card.querySelector('.product-title')?.textContent?.trim() || 'Product',
-              price: card.querySelector('.price')?.textContent?.trim() || '',
-              image: card.querySelector('.product-image')?.getAttribute('src') || ''
-            };
-            // Trigger add to cart using the same logic
-            const existing = cartItems.find(cartItem => cartItem.title === item.title);
-            if (existing) {
-              existing.quantity += 1;
-            } else {
-              cartItems.push({ ...item, quantity: 1 });
-            }
-            localStorage.setItem('tokyo_cart_items', JSON.stringify(cartItems));
-            renderCart();
-            showCartToast(item);
-          });
-        });
-
-        // Re-attach image click for product detail
-        document.querySelectorAll('.mobile-row .product-image').forEach(img => {
-          img.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const card = img.closest('.product-card');
-            const productTitle = card.querySelector('.product-title').textContent;
-            const oldPrice = card.querySelector('.price-old').textContent;
-            const currentPrice = card.querySelector('.price').textContent;
-            if (img.src) {
-              const params = new URLSearchParams({
-                image: img.src,
-                title: productTitle,
-                oldPrice: oldPrice,
-                currentPrice: currentPrice
-              });
-              window.location.href = `product-detail.html?${params.toString()}`;
-            }
-          });
-        });
+        isSetup = true;
       }
 
       function cleanupMobileRows() {
         document.querySelectorAll('.mobile-row').forEach(el => el.remove());
+        isSetup = false;
       }
 
       // Check if mobile
@@ -586,18 +549,32 @@
         return window.innerWidth <= 768;
       }
 
-      // Setup on load and resize
-      function handleResize() {
+      // Setup on load
+      window.addEventListener('load', () => {
         if (isMobile()) {
           setupMobileRows();
-        } else {
-          cleanupMobileRows();
         }
-      }
+      });
 
-      window.addEventListener('load', handleResize);
-      window.addEventListener('resize', handleResize);
+      // Only handle resize when crossing the breakpoint
+      window.addEventListener('resize', () => {
+        const currentWidth = window.innerWidth;
+        const wasMobile = lastWidth <= 768;
+        const nowMobile = currentWidth <= 768;
+
+        // Only act if crossing the breakpoint
+        if (wasMobile !== nowMobile) {
+          if (nowMobile) {
+            setupMobileRows();
+          } else {
+            cleanupMobileRows();
+          }
+        }
+
+        lastWidth = currentWidth;
+      });
     })();
+
 </script>
 </body>
 </html>
