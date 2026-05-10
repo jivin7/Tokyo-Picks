@@ -108,25 +108,6 @@
     .auth-success.show {
       display: block;
     }
-    .auth-setup-notice {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 18px;
-      line-height: 1.45;
-      display: none;
-    }
-    .auth-setup-notice.show {
-      display: block;
-    }
-    .auth-setup-notice code {
-      font-size: 12px;
-      background: rgba(0,0,0,0.06);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
   </style>
 </head>
 <body>
@@ -135,6 +116,19 @@
     <div class="logo">Tokyo Picks</div>
     <div class="nav-right">
       <a href="index.html" class="icon-btn checkout-back-btn" aria-label="Back to home" title="Back to home">Back</a>
+      <a href="login.html" class="icon-btn" id="login-nav-btn" aria-label="Login" title="Login" style="text-decoration:none; font-weight:600; font-size:14px; padding:6px 12px;">Login</a>
+      <div class="menu-container" id="user-menu-container" style="display:none;">
+        <button class="icon-btn" id="user-btn" aria-label="Account" title="Account">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="user-dropdown-menu">
+          <div class="menu-item" style="font-weight:700; color:#1f2937; cursor:default;" id="user-name-display">User</div>
+          <a href="#" class="menu-item" id="logout-link">Logout</a>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -142,9 +136,6 @@
     <div class="auth-card">
       <h1>Create Account</h1>
       <p class="auth-subtitle">Join Tokyo Picks today</p>
-      <div class="auth-setup-notice" id="firebase-setup-notice" role="note">
-        <strong>Use the same account on every device?</strong> Add your Firebase keys to <code>js/firebase-init.js</code> (see the comment at the top of that file). Until then, registration only saves on this browser.
-      </div>
       <div class="auth-error" id="register-error"></div>
       <div class="auth-success" id="register-success"></div>
       <form id="register-form" onsubmit="return false;">
@@ -190,11 +181,6 @@
         successEl.textContent = msg;
         successEl.classList.add('show');
         errorEl.classList.remove('show');
-      }
-
-      var setupNotice = document.getElementById('firebase-setup-notice');
-      if (setupNotice && !window.TOKYO_FIREBASE_CONFIGURED) {
-        setupNotice.classList.add('show');
       }
 
       function legacyRegister(name, email, password) {
@@ -275,6 +261,9 @@
         }
       });
     })();
+  </script>
+  <script>
+    TokyoPicksAuth.mountNav({ mergeCartOnLoad: false });
   </script>
 </body>
 </html>
