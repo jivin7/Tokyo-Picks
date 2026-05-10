@@ -96,6 +96,25 @@
     .auth-error.show {
       display: block;
     }
+    .auth-setup-notice {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      line-height: 1.45;
+      display: none;
+    }
+    .auth-setup-notice.show {
+      display: block;
+    }
+    .auth-setup-notice code {
+      font-size: 12px;
+      background: rgba(0,0,0,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -111,6 +130,9 @@
     <div class="auth-card">
       <h1>Welcome Back</h1>
       <p class="auth-subtitle">Sign in to your account</p>
+      <div class="auth-setup-notice" id="firebase-setup-notice" role="note">
+        <strong>Log in on phone or another computer?</strong> Add your Firebase keys to <code>js/firebase-init.js</code> (see the comment at the top of that file). Until then, accounts only exist in this browser—not on other devices.
+      </div>
       <div class="auth-error" id="login-error"></div>
       <form id="login-form" onsubmit="return false;">
         <div class="auth-field">
@@ -127,31 +149,36 @@
     </div>
   </main>
 
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/tokyo-auth.js"></script>
   <script>
     (function() {
-      const loginForm = document.getElementById('login-form');
       const loginBtn = document.getElementById('login-btn');
       const errorEl = document.getElementById('login-error');
-
-      function getUsers() {
-        try {
-          const saved = localStorage.getItem('tokyo_users');
-          return saved ? JSON.parse(saved) : {};
-        } catch (e) { return {}; }
-      }
 
       function showError(msg) {
         errorEl.textContent = msg;
         errorEl.classList.add('show');
       }
 
-      loginBtn.addEventListener('click', () => {
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
-        const password = document.getElementById('login-password').value;
+      function restoreCartForEmail(email) {
+        const userCartKey = 'tokyo_cart_' + email;
+        const userCart = localStorage.getItem(userCartKey);
+        if (userCart) {
+          localStorage.setItem('tokyo_cart_items', userCart);
+        } else {
+          localStorage.setItem('tokyo_cart_items', '[]');
+        }
+      }
 
-        if (!email || !password) {
-          showError('Please fill in all fields.');
-          return;
+      function legacyLogin(email, password) {
+        function getUsers() {
+          try {
+            const saved = localStorage.getItem('tokyo_users');
+            return saved ? JSON.parse(saved) : {};
+          } catch (e) { return {}; }
         }
 
         const users = getUsers();
@@ -167,23 +194,49 @@
           return;
         }
 
-        // Login successful
         localStorage.setItem('tokyo_current_user', JSON.stringify({
           email: user.email,
           name: user.name,
           loggedInAt: Date.now()
         }));
 
-        // Restore user's cart
-        const userCartKey = 'tokyo_cart_' + user.email;
-        const userCart = localStorage.getItem(userCartKey);
-        if (userCart) {
-          localStorage.setItem('tokyo_cart_items', userCart);
-        } else {
-          localStorage.setItem('tokyo_cart_items', '[]');
+        restoreCartForEmail(user.email);
+        window.location.href = 'index.html';
+      }
+
+      function firebaseLogin(email, password) {
+        firebase.auth().signInWithEmailAndPassword(email, password)
+          .then(function () {
+            var u = firebase.auth().currentUser;
+            if (u && u.email) {
+              restoreCartForEmail(u.email);
+            }
+            window.location.href = 'index.html';
+          })
+          .catch(function (err) {
+            showError(TokyoPicksAuth.formatFirebaseError(err));
+          });
+      }
+
+      var setupNotice = document.getElementById('firebase-setup-notice');
+      if (setupNotice && !window.TOKYO_FIREBASE_CONFIGURED) {
+        setupNotice.classList.add('show');
+      }
+
+      loginBtn.addEventListener('click', function () {
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const password = document.getElementById('login-password').value;
+
+        if (!email || !password) {
+          showError('Please fill in all fields.');
+          return;
         }
 
-        window.location.href = 'index.html';
+        if (TokyoPicksSession.usesFirebase()) {
+          firebaseLogin(email, password);
+        } else {
+          legacyLogin(email, password);
+        }
       });
     })();
   </script>

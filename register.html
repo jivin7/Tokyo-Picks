@@ -108,6 +108,25 @@
     .auth-success.show {
       display: block;
     }
+    .auth-setup-notice {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      line-height: 1.45;
+      display: none;
+    }
+    .auth-setup-notice.show {
+      display: block;
+    }
+    .auth-setup-notice code {
+      font-size: 12px;
+      background: rgba(0,0,0,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -123,6 +142,9 @@
     <div class="auth-card">
       <h1>Create Account</h1>
       <p class="auth-subtitle">Join Tokyo Picks today</p>
+      <div class="auth-setup-notice" id="firebase-setup-notice" role="note">
+        <strong>Use the same account on every device?</strong> Add your Firebase keys to <code>js/firebase-init.js</code> (see the comment at the top of that file). Until then, registration only saves on this browser.
+      </div>
       <div class="auth-error" id="register-error"></div>
       <div class="auth-success" id="register-success"></div>
       <form id="register-form" onsubmit="return false;">
@@ -148,22 +170,15 @@
     </div>
   </main>
 
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/tokyo-auth.js"></script>
   <script>
     (function() {
       const registerBtn = document.getElementById('register-btn');
       const errorEl = document.getElementById('register-error');
       const successEl = document.getElementById('register-success');
-
-      function getUsers() {
-        try {
-          const saved = localStorage.getItem('tokyo_users');
-          return saved ? JSON.parse(saved) : {};
-        } catch (e) { return {}; }
-      }
-
-      function saveUsers(users) {
-        localStorage.setItem('tokyo_users', JSON.stringify(users));
-      }
 
       function showError(msg) {
         errorEl.textContent = msg;
@@ -177,7 +192,62 @@
         errorEl.classList.remove('show');
       }
 
-      registerBtn.addEventListener('click', () => {
+      var setupNotice = document.getElementById('firebase-setup-notice');
+      if (setupNotice && !window.TOKYO_FIREBASE_CONFIGURED) {
+        setupNotice.classList.add('show');
+      }
+
+      function legacyRegister(name, email, password) {
+        function getUsers() {
+          try {
+            const saved = localStorage.getItem('tokyo_users');
+            return saved ? JSON.parse(saved) : {};
+          } catch (e) { return {}; }
+        }
+
+        function saveUsers(users) {
+          localStorage.setItem('tokyo_users', JSON.stringify(users));
+        }
+
+        const users = getUsers();
+
+        if (users[email]) {
+          showError('An account with this email already exists.');
+          return;
+        }
+
+        users[email] = {
+          email: email,
+          name: name,
+          password: password,
+          createdAt: Date.now()
+        };
+
+        saveUsers(users);
+        showSuccess('Account created! Redirecting to login...');
+
+        setTimeout(function () {
+          window.location.href = 'login.html';
+        }, 1500);
+      }
+
+      function firebaseRegister(name, email, password) {
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+          .then(function (cred) {
+            return cred.user.updateProfile({ displayName: name });
+          })
+          .then(function () {
+            showSuccess('Account created! Redirecting...');
+            setTimeout(function () {
+              window.location.href = 'index.html';
+            }, 800);
+          })
+          .catch(function (err) {
+            showError(TokyoPicksAuth.formatFirebaseError(err));
+          });
+      }
+
+      registerBtn.addEventListener('click', function () {
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         const password = document.getElementById('reg-password').value;
@@ -198,27 +268,11 @@
           return;
         }
 
-        const users = getUsers();
-
-        if (users[email]) {
-          showError('An account with this email already exists.');
-          return;
+        if (TokyoPicksSession.usesFirebase()) {
+          firebaseRegister(name, email, password);
+        } else {
+          legacyRegister(name, email, password);
         }
-
-        // Create user
-        users[email] = {
-          email: email,
-          name: name,
-          password: password,
-          createdAt: Date.now()
-        };
-
-        saveUsers(users);
-        showSuccess('Account created! Redirecting to login...');
-
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 1500);
       });
     })();
   </script>

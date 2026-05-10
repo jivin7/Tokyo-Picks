@@ -53,26 +53,10 @@
     </aside>
   </main>
 
-  <script>
-    // Auth check
-    (function() {
-      function getCurrentUser() {
-        try {
-          const saved = localStorage.getItem('tokyo_current_user');
-          return saved ? JSON.parse(saved) : null;
-        } catch (e) { return null; }
-      }
-
-      // If logged in, load user cart
-      const user = getCurrentUser();
-      if (user) {
-        const userCart = localStorage.getItem('tokyo_cart_' + user.email);
-        if (userCart) {
-          localStorage.setItem('tokyo_cart_items', userCart);
-        }
-      }
-    })();
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/tokyo-auth.js"></script>
   <script>
     (function () {
       const itemsContainer = document.getElementById('checkout-items');
@@ -102,6 +86,16 @@
 
       function money(value) {
         return `LE ${value.toFixed(2)} EGP`;
+      }
+
+      function mergeUserCartFromAuth() {
+        const u = TokyoPicksSession.getUser();
+        if (u && u.email) {
+          const uc = localStorage.getItem('tokyo_cart_' + u.email);
+          if (uc) {
+            localStorage.setItem('tokyo_cart_items', uc);
+          }
+        }
       }
 
       function renderCheckout() {
@@ -141,81 +135,47 @@
         checkoutBtn.disabled = false;
       }
 
-      checkoutBtn.addEventListener('click', () => {
-        alert('Order placed successfully!');
-        localStorage.removeItem('tokyo_cart_items');
-        renderCheckout();
-      });
+      let listenersAttached = false;
+      function attachListeners() {
+        if (listenersAttached) return;
+        listenersAttached = true;
 
-      itemsContainer.addEventListener('click', (e) => {
-        const removeBtn = e.target.closest('.checkout-remove-btn');
-        if (!removeBtn) return;
-        const index = Number(removeBtn.getAttribute('data-index'));
-        const items = getStoredCartItems();
-        if (Number.isNaN(index) || index < 0 || index >= items.length) return;
-        items.splice(index, 1);
-        setStoredCartItems(items);
-        renderCheckout();
-      });
-
-      renderCheckout();
-    })();
-  </script>
-<script>
-    (function() {
-      function getCurrentUser() {
-        try {
-          const saved = localStorage.getItem('tokyo_current_user');
-          return saved ? JSON.parse(saved) : null;
-        } catch (e) { return null; }
-      }
-
-      function updateNavAuth() {
-        const user = getCurrentUser();
-        const userMenu = document.getElementById('user-menu-container');
-        const loginBtn = document.getElementById('login-nav-btn');
-        const userNameDisplay = document.getElementById('user-name-display');
-
-        if (user) {
-          if (userMenu) userMenu.style.display = 'inline-block';
-          if (loginBtn) loginBtn.style.display = 'none';
-          if (userNameDisplay) userNameDisplay.textContent = user.name || user.email;
-        } else {
-          if (userMenu) userMenu.style.display = 'none';
-          if (loginBtn) loginBtn.style.display = 'inline-flex';
-        }
-      }
-
-      const userBtn = document.getElementById('user-btn');
-      const userDropdown = document.getElementById('user-dropdown-menu');
-      if (userBtn && userDropdown) {
-        userBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          userDropdown.classList.toggle('active');
-        });
-        document.addEventListener('click', (e) => {
-          if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-            userDropdown.classList.remove('active');
-          }
-        });
-      }
-
-      const logoutLink = document.getElementById('logout-link');
-      if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          const user = getCurrentUser();
-          if (user) {
-            const currentCart = localStorage.getItem('tokyo_cart_items') || '[]';
-            localStorage.setItem('tokyo_cart_' + user.email, currentCart);
-          }
-          localStorage.removeItem('tokyo_current_user');
+        checkoutBtn.addEventListener('click', () => {
+          alert('Order placed successfully!');
           localStorage.removeItem('tokyo_cart_items');
-          window.location.href = 'index.html';
+          renderCheckout();
+        });
+
+        itemsContainer.addEventListener('click', (e) => {
+          const removeBtn = e.target.closest('.checkout-remove-btn');
+          if (!removeBtn) return;
+          const index = Number(removeBtn.getAttribute('data-index'));
+          const items = getStoredCartItems();
+          if (Number.isNaN(index) || index < 0 || index >= items.length) return;
+          items.splice(index, 1);
+          setStoredCartItems(items);
+          renderCheckout();
         });
       }
 
-      updateNavAuth();
+      function bootCheckout() {
+        mergeUserCartFromAuth();
+        renderCheckout();
+        attachListeners();
+      }
+
+      if (TokyoPicksSession.usesFirebase()) {
+        firebase.auth().onAuthStateChanged(function () {
+          bootCheckout();
+        });
+      } else {
+        bootCheckout();
+      }
+
+      TokyoPicksAuth.mountNav({
+        mergeCartOnLoad: false,
+        logoutRedirect: 'index.html'
+      });
     })();
   </script>
 </body>

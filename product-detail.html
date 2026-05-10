@@ -232,80 +232,16 @@
 
     updateCartDot();
   </script>
-<script>
-    (function() {
-      function getCurrentUser() {
-        try {
-          const saved = localStorage.getItem('tokyo_current_user');
-          return saved ? JSON.parse(saved) : null;
-        } catch (e) { return null; }
-      }
-
-      function updateNavAuth() {
-        const user = getCurrentUser();
-        const userMenu = document.getElementById('user-menu-container');
-        const loginBtn = document.getElementById('login-nav-btn');
-        const userNameDisplay = document.getElementById('user-name-display');
-
-        if (user) {
-          if (userMenu) userMenu.style.display = 'inline-block';
-          if (loginBtn) loginBtn.style.display = 'none';
-          if (userNameDisplay) userNameDisplay.textContent = user.name || user.email;
-
-          // Load user cart
-          const userCart = localStorage.getItem('tokyo_cart_' + user.email);
-          if (userCart) {
-            localStorage.setItem('tokyo_cart_items', userCart);
-          }
-        } else {
-          if (userMenu) userMenu.style.display = 'none';
-          if (loginBtn) loginBtn.style.display = 'inline-flex';
-        }
-      }
-
-      const userBtn = document.getElementById('user-btn');
-      const userDropdown = document.getElementById('user-dropdown-menu');
-      if (userBtn && userDropdown) {
-        userBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          userDropdown.classList.toggle('active');
-        });
-        document.addEventListener('click', (e) => {
-          if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-            userDropdown.classList.remove('active');
-          }
-        });
-      }
-
-      const logoutLink = document.getElementById('logout-link');
-      if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          const user = getCurrentUser();
-          if (user) {
-            const currentCart = localStorage.getItem('tokyo_cart_items') || '[]';
-            localStorage.setItem('tokyo_cart_' + user.email, currentCart);
-          }
-          localStorage.removeItem('tokyo_current_user');
-          localStorage.removeItem('tokyo_cart_items');
-          window.location.href = 'index.html';
-        });
-      }
-
-      // Save cart on changes
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = function(key, value) {
-        originalSetItem.call(this, key, value);
-        if (key === 'tokyo_cart_items') {
-          const user = getCurrentUser();
-          if (user) {
-            localStorage.setItem('tokyo_cart_' + user.email, value);
-          }
-        }
-      };
-
-      updateNavAuth();
-    })();
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/tokyo-auth.js"></script>
+  <script>
+    TokyoPicksAuth.mountNav({
+      mergeCartOnLoad: true,
+      hookCartSave: true,
+      logoutRedirect: 'index.html'
+    });
   </script>
 </body>
 </html>
