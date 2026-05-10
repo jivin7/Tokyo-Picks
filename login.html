@@ -150,39 +150,78 @@
         }
       }
 
-      function legacyLogin(email, password) {
-        function getUsers() {
-          try {
-            const saved = localStorage.getItem('tokyo_users');
-            return saved ? JSON.parse(saved) : {};
-          } catch (e) { return {}; }
+      function getUsers() {
+        try {
+          const saved = localStorage.getItem('tokyo_users');
+          return saved ? JSON.parse(saved) : {};
+        } catch (e) {
+          return {};
         }
+      }
 
+      /** True if Firebase finished initializing (do not rely on tokyo-auth.js alone). */
+      function firebaseAppReady() {
+        try {
+          return (
+            typeof firebase !== 'undefined' &&
+            firebase.apps &&
+            firebase.apps.length > 0
+          );
+        } catch (e) {
+          return false;
+        }
+      }
+
+      /**
+       * Local-only accounts (tokyo_users). Returns true if we handled it:
+       * redirected on success, or showed "wrong password".
+       * Returns false if there is no local account for this email.
+       */
+      function tryLegacyLogin(email, password) {
         const users = getUsers();
         const user = users[email];
-
         if (!user) {
-          showError('Account not found. Please register first.');
-          return;
+          return false;
         }
-
         if (user.password !== password) {
           showError('Incorrect password.');
-          return;
+          return true;
         }
-
-        localStorage.setItem('tokyo_current_user', JSON.stringify({
-          email: user.email,
-          name: user.name,
-          loggedInAt: Date.now()
-        }));
-
+        localStorage.setItem(
+          'tokyo_current_user',
+          JSON.stringify({
+            email: user.email,
+            name: user.name,
+            loggedInAt: Date.now()
+          })
+        );
         restoreCartForEmail(user.email);
         window.location.href = 'index.html';
+        return true;
+      }
+
+      function legacyLoginOnly(email, password) {
+        if (!tryLegacyLogin(email, password)) {
+          showError(
+            'No account on this browser for that email. Use Create one to register here first.'
+          );
+        }
+      }
+
+      function formatFirebaseErr(err) {
+        if (
+          typeof TokyoPicksAuth !== 'undefined' &&
+          TokyoPicksAuth.formatFirebaseError
+        ) {
+          return TokyoPicksAuth.formatFirebaseError(err);
+        }
+        return (err && err.message) || 'Sign in failed.';
       }
 
       function firebaseLogin(email, password) {
-        firebase.auth().signInWithEmailAndPassword(email, password)
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password)
           .then(function () {
             var u = firebase.auth().currentUser;
             if (u && u.email) {
@@ -191,28 +230,18 @@
             window.location.href = 'index.html';
           })
           .catch(function (err) {
-            var msg =
-              typeof TokyoPicksAuth !== 'undefined' && TokyoPicksAuth.formatFirebaseError
-                ? TokyoPicksAuth.formatFirebaseError(err)
-                : (err && err.message) || 'Sign in failed.';
-            showError(msg);
+            if (tryLegacyLogin(email, password)) {
+              return;
+            }
+            showError(formatFirebaseErr(err));
           });
       }
 
-      function sessionUsesFirebase() {
-        try {
-          return (
-            typeof TokyoPicksSession !== 'undefined' &&
-            TokyoPicksSession.usesFirebase &&
-            TokyoPicksSession.usesFirebase()
-          );
-        } catch (e) {
-          return false;
-        }
-      }
-
       function attemptLogin() {
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const email = document
+          .getElementById('login-email')
+          .value.trim()
+          .toLowerCase();
         const password = document.getElementById('login-password').value;
 
         if (!email || !password) {
@@ -220,10 +249,10 @@
           return;
         }
 
-        if (sessionUsesFirebase()) {
+        if (firebaseAppReady()) {
           firebaseLogin(email, password);
         } else {
-          legacyLogin(email, password);
+          legacyLoginOnly(email, password);
         }
       }
 
