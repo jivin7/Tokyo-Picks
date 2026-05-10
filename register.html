@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Tokyo Picks</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-page {
+      max-width: 420px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+    .auth-card h1 {
+      font-size: 28px;
+      margin: 0 0 8px 0;
+      color: #1f2937;
+      text-align: center;
+    }
+    .auth-subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 28px;
+      font-size: 15px;
+    }
+    .auth-field {
+      margin-bottom: 18px;
+    }
+    .auth-field label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .auth-field input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fafafa;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .auth-field input:focus {
+      outline: none;
+      border-color: #746aff;
+      background: #fff;
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #2b2b36;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .auth-btn:hover {
+      background: #1a1a24;
+    }
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .auth-switch a {
+      color: #746aff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+    .auth-error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-error.show {
+      display: block;
+    }
+    .auth-success {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-success.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <a href="index.html" class="icon-btn checkout-back-btn" aria-label="Back to home" title="Back to home">Back</a>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Create Account</h1>
+      <p class="auth-subtitle">Join Tokyo Picks today</p>
+      <div class="auth-error" id="register-error"></div>
+      <div class="auth-success" id="register-success"></div>
+      <form id="register-form" onsubmit="return false;">
+        <div class="auth-field">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" placeholder="Your name" required>
+        </div>
+        <div class="auth-field">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" required>
+        </div>
+        <div class="auth-field">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Min 6 characters" required minlength="6">
+        </div>
+        <div class="auth-field">
+          <label for="reg-confirm">Confirm Password</label>
+          <input type="password" id="reg-confirm" placeholder="Repeat password" required>
+        </div>
+        <button type="submit" class="auth-btn" id="register-btn">Create Account</button>
+      </form>
+      <p class="auth-switch">Already have an account? <a href="login.html">Sign in</a></p>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const registerBtn = document.getElementById('register-btn');
+      const errorEl = document.getElementById('register-error');
+      const successEl = document.getElementById('register-success');
+
+      function getUsers() {
+        try {
+          const saved = localStorage.getItem('tokyo_users');
+          return saved ? JSON.parse(saved) : {};
+        } catch (e) { return {}; }
+      }
+
+      function saveUsers(users) {
+        localStorage.setItem('tokyo_users', JSON.stringify(users));
+      }
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.add('show');
+        successEl.classList.remove('show');
+      }
+
+      function showSuccess(msg) {
+        successEl.textContent = msg;
+        successEl.classList.add('show');
+        errorEl.classList.remove('show');
+      }
+
+      registerBtn.addEventListener('click', () => {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim().toLowerCase();
+        const password = document.getElementById('reg-password').value;
+        const confirm = document.getElementById('reg-confirm').value;
+
+        if (!name || !email || !password || !confirm) {
+          showError('Please fill in all fields.');
+          return;
+        }
+
+        if (password.length < 6) {
+          showError('Password must be at least 6 characters.');
+          return;
+        }
+
+        if (password !== confirm) {
+          showError('Passwords do not match.');
+          return;
+        }
+
+        const users = getUsers();
+
+        if (users[email]) {
+          showError('An account with this email already exists.');
+          return;
+        }
+
+        // Create user
+        users[email] = {
+          email: email,
+          name: name,
+          password: password,
+          createdAt: Date.now()
+        };
+
+        saveUsers(users);
+        showSuccess('Account created! Redirecting to login...');
+
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+      });
+    })();
+  </script>
+</body>
+</html>

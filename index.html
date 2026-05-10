@@ -27,6 +27,21 @@
           <a href="#" class="menu-item">Contact</a>
         </div>
       </div>
+      <div class="menu-container" id="user-menu-container" style="display:none;">
+        <button class="icon-btn" id="user-btn" aria-label="Account" title="Account">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="user-dropdown-menu">
+          <div class="menu-item" style="font-weight:700; color:#1f2937; cursor:default;" id="user-name-display">User</div>
+          <a href="#" class="menu-item" id="logout-link">Logout</a>
+        </div>
+      </div>
+      <a href="login.html" class="icon-btn" id="login-nav-btn" aria-label="Login" title="Login" style="text-decoration:none; font-weight:600; font-size:14px; padding:6px 12px;">
+        Login
+      </a>
       <button class="icon-btn cart-btn" id="cart-btn" aria-label="Cart" title="Cart">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="9" cy="21" r="1"></circle>
@@ -575,6 +590,85 @@
       });
     })();
 
+
+
+    // Auth system
+    (function() {
+      function getCurrentUser() {
+        try {
+          const saved = localStorage.getItem('tokyo_current_user');
+          return saved ? JSON.parse(saved) : null;
+        } catch (e) { return null; }
+      }
+
+      function updateNavAuth() {
+        const user = getCurrentUser();
+        const userMenu = document.getElementById('user-menu-container');
+        const loginBtn = document.getElementById('login-nav-btn');
+        const userNameDisplay = document.getElementById('user-name-display');
+
+        if (user) {
+          if (userMenu) userMenu.style.display = 'inline-block';
+          if (loginBtn) loginBtn.style.display = 'none';
+          if (userNameDisplay) userNameDisplay.textContent = user.name || user.email;
+        } else {
+          if (userMenu) userMenu.style.display = 'none';
+          if (loginBtn) loginBtn.style.display = 'inline-flex';
+        }
+      }
+
+      // User dropdown toggle
+      const userBtn = document.getElementById('user-btn');
+      const userDropdown = document.getElementById('user-dropdown-menu');
+      if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userDropdown.classList.toggle('active');
+        });
+        document.addEventListener('click', (e) => {
+          if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+            userDropdown.classList.remove('active');
+          }
+        });
+      }
+
+      // Logout
+      const logoutLink = document.getElementById('logout-link');
+      if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          const user = getCurrentUser();
+          if (user) {
+            // Save current cart to user's cart
+            const currentCart = localStorage.getItem('tokyo_cart_items') || '[]';
+            localStorage.setItem('tokyo_cart_' + user.email, currentCart);
+          }
+          localStorage.removeItem('tokyo_current_user');
+          localStorage.removeItem('tokyo_cart_items');
+          window.location.reload();
+        });
+      }
+
+      // Save cart changes to user's account
+      function saveCartToUser() {
+        const user = getCurrentUser();
+        if (user) {
+          const cart = localStorage.getItem('tokyo_cart_items') || '[]';
+          localStorage.setItem('tokyo_cart_' + user.email, cart);
+        }
+      }
+
+      // Hook into cart save operations
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = function(key, value) {
+        originalSetItem.call(this, key, value);
+        if (key === 'tokyo_cart_items') {
+          saveCartToUser();
+        }
+      };
+
+      updateNavAuth();
+    })();
 </script>
 </body>
 </html>
