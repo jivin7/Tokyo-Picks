@@ -185,13 +185,30 @@
         }
       }
 
-      TokyoPicksAuth.mountNav({
-        mergeCartOnLoad: true,
-        hookCartSave: true,
-        logoutRedirect: 'index.html'
-      });
+      /** Works even if js/tokyo-auth.js failed to load (404 on host). */
+      function readSessionFallback() {
+        try {
+          var raw = localStorage.getItem('tokyo_current_user');
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
 
-      var user = TokyoPicksSession.getUser();
+      if (typeof TokyoPicksAuth !== 'undefined' && TokyoPicksAuth.mountNav) {
+        try {
+          TokyoPicksAuth.mountNav({
+            mergeCartOnLoad: true,
+            hookCartSave: true,
+            logoutRedirect: 'index.html'
+          });
+        } catch (e) {}
+      }
+
+      var user =
+        typeof TokyoPicksSession !== 'undefined' && TokyoPicksSession.getUser
+          ? TokyoPicksSession.getUser()
+          : readSessionFallback();
       var root = document.getElementById('udb-root');
 
       if (!user || !user.email) {
@@ -199,7 +216,7 @@
         return;
       }
 
-      if (typeof TokyoPicksSession.restoreAllData === 'function') {
+      if (typeof TokyoPicksSession !== 'undefined' && typeof TokyoPicksSession.restoreAllData === 'function') {
         TokyoPicksSession.restoreAllData(user);
       }
 
@@ -228,7 +245,17 @@
         }).join('');
       }
 
+      var missingAuth =
+        typeof TokyoPicksAuth === 'undefined' ||
+        typeof TokyoPicksSession === 'undefined';
+
+      var warn =
+        missingAuth
+          ? '<section class="udb-panel" style="border-color:#fbbf24;background:#fffbeb;"><p style="margin:0;font-size:14px;color:#92400e;"><strong>Setup tip:</strong> Add <code>js/tokyo-auth.js</code> to your host so the account icon and logout work everywhere. Your session above still loads from this browser.</p></section>'
+          : '';
+
       root.innerHTML =
+        warn +
         '<div class="udb-hero">' +
         '<div class="udb-avatar" aria-hidden="true">' + esc(initials(user.name, user.email)) + '</div>' +
         '<div>' +
