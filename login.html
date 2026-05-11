@@ -96,6 +96,18 @@
     .auth-error.show {
       display: block;
     }
+    .auth-success {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-success.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -125,12 +137,13 @@
       <h1>Welcome Back</h1>
       <p class="auth-subtitle">Sign in to your account</p>
       <div class="auth-error" id="login-error"></div>
+      <div class="auth-success" id="login-success"></div>
       <form id="login-form">
         <div class="auth-field">
           <label for="login-email">Email</label>
           <input type="email" id="login-email" placeholder="you@example.com" required>
         </div>
-        <div class="auth-field">
+        <div class="auth-field" id="password-field">
           <label for="login-password">Password</label>
           <input type="password" id="login-password" placeholder="Enter your password" required>
         </div>
@@ -144,10 +157,35 @@
   <script>
     (function() {
       const errorEl = document.getElementById('login-error');
+      const successEl = document.getElementById('login-success');
+      const loginBtn = document.getElementById('login-btn');
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const OTP_TTL_MS = 5 * 60 * 1000;
 
       function showError(msg) {
         errorEl.textContent = msg;
         errorEl.classList.add('show');
+        successEl.classList.remove('show');
+      }
+
+      function showSuccess(msg) {
+        successEl.textContent = msg;
+        successEl.classList.add('show');
+        errorEl.classList.remove('show');
+      }
+
+      function clearMessages() {
+        errorEl.classList.remove('show');
+        successEl.classList.remove('show');
+      }
+
+      function generateOtpCode() {
+        return String(Math.floor(100000 + Math.random() * 900000));
+      }
+
+      function normalizeEmail(value) {
+        return String(value || '').trim().toLowerCase();
       }
 
       function restoreCartForEmail(email) {
@@ -169,16 +207,23 @@
         }
       }
 
-      function tryLogin(email, password) {
+      function getUserByEmail(email) {
         const users = getUsers();
-        const user = users[email];
+        return users[email] || null;
+      }
+
+      function validateCredentials(email, password) {
+        const user = getUserByEmail(email);
         if (!user) {
-          return false;
+          return { ok: false, reason: 'No account on this browser for that email. Create one first.' };
         }
         if (user.password !== password) {
-          showError('Incorrect password.');
-          return true;
+          return { ok: false, reason: 'Incorrect password.' };
         }
+        return { ok: true, user: user };
+      }
+
+      function completeLogin(user) {
         localStorage.setItem(
           'tokyo_current_user',
           JSON.stringify({
@@ -189,37 +234,63 @@
         );
         restoreCartForEmail(user.email);
         window.location.href = 'index.html';
-        return true;
       }
 
-      function localDatabaseLogin(email, password) {
-        if (!tryLogin(email, password)) {
-          showError(
-            'No account on this browser for that email. Use Create one to register here first.'
-          );
-        }
+      function deliverCodeInsideWebsite(email, code) {
+        // Website-local OTP delivery store (no external service needed).
+        localStorage.setItem(
+          'tokyo_last_otp_' + email,
+          JSON.stringify({ code: code, createdAt: Date.now() })
+        );
+        return Promise.resolve();
       }
 
-      function attemptLogin() {
-        const email = document
-          .getElementById('login-email')
-          .value.trim()
-          .toLowerCase();
-        const password = document.getElementById('login-password').value;
-
+      function startVerificationFlow() {
+        const email = normalizeEmail(emailInput.value);
+        const password = String(passwordInput.value || '');
+        clearMessages();
         if (!email || !password) {
-          showError('Please fill in all fields.');
+          showError('Please enter email and password.');
           return;
         }
 
-        localDatabaseLogin(email, password);
+        const auth = validateCredentials(email, password);
+        if (!auth.ok) {
+          showError(auth.reason);
+          return;
+        }
+
+        const code = generateOtpCode();
+        const payload = {
+          email: email,
+          password: password,
+          code: code,
+          expiresAt: Date.now() + OTP_TTL_MS,
+          sentAt: Date.now()
+        };
+
+        loginBtn.disabled = true;
+        deliverCodeInsideWebsite(email, code)
+          .then(function () {
+            sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(payload));
+            showSuccess('Code generated. Redirecting to enter code...');
+            setTimeout(function () {
+              window.location.href = 'enter-code.html';
+            }, 300);
+          })
+          .catch(function (err) {
+            showError((err && err.message) || 'Failed to send code. Try again.');
+          })
+          .finally(function () {
+            loginBtn.disabled = false;
+          });
       }
 
       const loginForm = document.getElementById('login-form');
       if (loginForm) {
         loginForm.addEventListener('submit', function (e) {
           e.preventDefault();
-          attemptLogin();
+          startVerificationFlow();
         });
       }
     })();

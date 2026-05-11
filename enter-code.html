@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enter Code - Tokyo Picks</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-page {
+      max-width: 420px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+    .auth-card h1 {
+      font-size: 28px;
+      margin: 0 0 8px 0;
+      color: #1f2937;
+      text-align: center;
+    }
+    .auth-subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+    .auth-field {
+      margin-bottom: 18px;
+    }
+    .auth-field label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .auth-field input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fafafa;
+      box-sizing: border-box;
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #2b2b36;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .auth-btn.secondary {
+      background: #6b7280;
+    }
+    .auth-error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-error.show {
+      display: block;
+    }
+    .auth-help {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .auth-help a {
+      color: #746aff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <a href="login.html" class="icon-btn checkout-back-btn" aria-label="Back to login" title="Back to login">Back</a>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Enter Code</h1>
+      <p class="auth-subtitle" id="otp-subtitle">Enter the verification code sent to your email.</p>
+      <div class="auth-error" id="otp-error"></div>
+      <form id="otp-form">
+        <div class="auth-field">
+          <label for="otp-code">Verification Code</label>
+          <input type="text" id="otp-code" placeholder="Enter 6-digit code" inputmode="numeric" maxlength="6" required>
+        </div>
+        <button type="submit" class="auth-btn" id="otp-submit-btn">Sign In</button>
+        <button type="button" class="auth-btn secondary" id="otp-resend-btn">Resend Code</button>
+      </form>
+      <p class="auth-help"><a href="login.html">Back to login</a></p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const errorEl = document.getElementById('otp-error');
+      const subtitleEl = document.getElementById('otp-subtitle');
+      const form = document.getElementById('otp-form');
+      const codeInput = document.getElementById('otp-code');
+      const resendBtn = document.getElementById('otp-resend-btn');
+      const OTP_TTL_MS = 5 * 60 * 1000;
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.add('show');
+      }
+
+      function normalizeEmail(value) {
+        return String(value || '').trim().toLowerCase();
+      }
+
+      function generateOtpCode() {
+        return String(Math.floor(100000 + Math.random() * 900000));
+      }
+
+      function deliverCodeInsideWebsite(email, code) {
+        localStorage.setItem(
+          'tokyo_last_otp_' + email,
+          JSON.stringify({ code: code, createdAt: Date.now() })
+        );
+        return Promise.resolve();
+      }
+
+      function getUsers() {
+        try {
+          const saved = localStorage.getItem('tokyo_users');
+          return saved ? JSON.parse(saved) : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function getUserByEmail(email) {
+        const users = getUsers();
+        return users[email] || null;
+      }
+
+      function restoreCartForEmail(email) {
+        const userCartKey = 'tokyo_cart_' + email;
+        const userCart = localStorage.getItem(userCartKey);
+        if (userCart) {
+          localStorage.setItem('tokyo_cart_items', userCart);
+        } else {
+          localStorage.setItem('tokyo_cart_items', '[]');
+        }
+      }
+
+      function completeLogin(user) {
+        localStorage.setItem(
+          'tokyo_current_user',
+          JSON.stringify({
+            email: user.email,
+            name: user.name,
+            loggedInAt: Date.now()
+          })
+        );
+        restoreCartForEmail(user.email);
+        sessionStorage.removeItem('tokyo_pending_otp');
+        window.location.href = 'index.html';
+      }
+
+      const pendingRaw = sessionStorage.getItem('tokyo_pending_otp');
+      if (!pendingRaw) {
+        showError('No pending login request. Please sign in first.');
+      }
+
+      let pending = null;
+      try {
+        pending = pendingRaw ? JSON.parse(pendingRaw) : null;
+      } catch (e) {
+        pending = null;
+      }
+
+      if (!pending || !pending.email || !pending.code || !pending.expiresAt) {
+        showError('Invalid login session. Please sign in again.');
+      } else {
+        subtitleEl.textContent =
+          'Enter the verification code for ' + pending.email + '. Current code: ' + pending.code;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!pending) {
+          showError('Please start again from login page.');
+          return;
+        }
+
+        const enteredCode = String(codeInput.value || '').trim();
+        if (!enteredCode) {
+          showError('Please enter the verification code.');
+          return;
+        }
+        if (Date.now() > Number(pending.expiresAt)) {
+          sessionStorage.removeItem('tokyo_pending_otp');
+          showError('Code expired. Please sign in again.');
+          return;
+        }
+        if (enteredCode !== String(pending.code)) {
+          showError('Incorrect code. Please try again.');
+          return;
+        }
+
+        const user = getUserByEmail(normalizeEmail(pending.email));
+        if (!user) {
+          showError('Account not found. Please register first.');
+          return;
+        }
+        if (String(user.password) !== String(pending.password || '')) {
+          showError('Password changed. Please sign in again.');
+          return;
+        }
+
+        completeLogin(user);
+      });
+
+      resendBtn.addEventListener('click', function () {
+        if (!pending || !pending.email) {
+          showError('Please sign in again from login page.');
+          return;
+        }
+
+        const newCode = generateOtpCode();
+        resendBtn.disabled = true;
+        deliverCodeInsideWebsite(pending.email, newCode)
+          .then(function () {
+            pending.code = newCode;
+            pending.expiresAt = Date.now() + OTP_TTL_MS;
+            pending.sentAt = Date.now();
+            sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(pending));
+            errorEl.classList.remove('show');
+            subtitleEl.textContent =
+              'New code generated for ' + pending.email + '. Current code: ' + pending.code;
+          })
+          .catch(function (err) {
+            showError((err && err.message) || 'Failed to resend code.');
+          })
+          .finally(function () {
+            resendBtn.disabled = false;
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
