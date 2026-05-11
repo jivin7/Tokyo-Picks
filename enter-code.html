@@ -158,16 +158,6 @@
         return users[email] || null;
       }
 
-      function restoreCartForEmail(email) {
-        const userCartKey = 'tokyo_cart_' + email;
-        const userCart = localStorage.getItem(userCartKey);
-        if (userCart) {
-          localStorage.setItem('tokyo_cart_items', userCart);
-        } else {
-          localStorage.setItem('tokyo_cart_items', '[]');
-        }
-      }
-
       function completeLogin(user) {
         localStorage.setItem(
           'tokyo_current_user',
@@ -177,7 +167,9 @@
             loggedInAt: Date.now()
           })
         );
-        restoreCartForEmail(user.email);
+        if (typeof TokyoPicksSession !== 'undefined' && TokyoPicksSession.restoreAllData) {
+          TokyoPicksSession.restoreAllData(user);
+        }
         sessionStorage.removeItem('tokyo_pending_otp');
         window.location.href = 'index.html';
       }
@@ -263,5 +255,6 @@
       });
     })();
   </script>
+  <script src="js/tokyo-auth.js"></script>
 </body>
 </html>
