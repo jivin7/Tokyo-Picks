@@ -181,7 +181,9 @@
       }
 
       function legacyRegister(name, email, password) {
+        const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
         function getUsers() {
+          if (db && db.getJSON) return db.getJSON('tokyo_users', {});
           try {
             const saved = localStorage.getItem('tokyo_users');
             return saved ? JSON.parse(saved) : {};
@@ -189,6 +191,10 @@
         }
 
         function saveUsers(users) {
+          if (db && db.setJSON) {
+            db.setJSON('tokyo_users', users);
+            return;
+          }
           localStorage.setItem('tokyo_users', JSON.stringify(users));
         }
 

@@ -190,15 +190,20 @@
 
       function restoreCartForEmail(email) {
         const userCartKey = 'tokyo_cart_' + email;
-        const userCart = localStorage.getItem(userCartKey);
+        const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+        const userCart = db && db.get ? db.get(userCartKey) : localStorage.getItem(userCartKey);
         if (userCart) {
-          localStorage.setItem('tokyo_cart_items', userCart);
+          if (db && db.set) db.set('tokyo_cart_items', userCart);
+          else localStorage.setItem('tokyo_cart_items', userCart);
         } else {
-          localStorage.setItem('tokyo_cart_items', '[]');
+          if (db && db.set) db.set('tokyo_cart_items', '[]');
+          else localStorage.setItem('tokyo_cart_items', '[]');
         }
       }
 
       function getUsers() {
+        const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+        if (db && db.getJSON) return db.getJSON('tokyo_users', {});
         try {
           const saved = localStorage.getItem('tokyo_users');
           return saved ? JSON.parse(saved) : {};
@@ -224,24 +229,24 @@
       }
 
       function completeLogin(user) {
-        localStorage.setItem(
-          'tokyo_current_user',
-          JSON.stringify({
-            email: user.email,
-            name: user.name,
-            loggedInAt: Date.now()
-          })
-        );
+        const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+        const payload = {
+          email: user.email,
+          name: user.name,
+          loggedInAt: Date.now()
+        };
+        if (db && db.setJSON) db.setJSON('tokyo_current_user', payload);
+        else localStorage.setItem('tokyo_current_user', JSON.stringify(payload));
         restoreCartForEmail(user.email);
         window.location.href = 'index.html';
       }
 
       function deliverCodeInsideWebsite(email, code) {
         // Website-local OTP delivery store (no external service needed).
-        localStorage.setItem(
-          'tokyo_last_otp_' + email,
-          JSON.stringify({ code: code, createdAt: Date.now() })
-        );
+        const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+        const payload = { code: code, createdAt: Date.now() };
+        if (db && db.setJSON) db.setJSON('tokyo_last_otp_' + email, payload);
+        else localStorage.setItem('tokyo_last_otp_' + email, JSON.stringify(payload));
         return Promise.resolve();
       }
 
@@ -272,7 +277,9 @@
         loginBtn.disabled = true;
         deliverCodeInsideWebsite(email, code)
           .then(function () {
-            sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(payload));
+            const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+            if (db && db.setJSON) db.setJSON('tokyo_pending_otp', payload);
+            else sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(payload));
             showSuccess('Code generated. Redirecting to enter code...');
             setTimeout(function () {
               window.location.href = 'enter-code.html';
