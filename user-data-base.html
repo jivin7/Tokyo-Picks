@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your account — Tokyo Picks</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .udb-wrap {
+      max-width: 720px;
+      margin: 28px auto 56px;
+      padding: 0 20px;
+    }
+    .udb-hero {
+      background: linear-gradient(135deg, #2b2b36 0%, #3d3d4d 100%);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 24px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+    .udb-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #746aff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .udb-hero h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .udb-hero p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+    .udb-panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 18px;
+      margin-bottom: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.05);
+    }
+    .udb-panel h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      color: #1f2937;
+    }
+    .udb-kv {
+      display: grid;
+      gap: 10px;
+      font-size: 14px;
+      color: #374151;
+    }
+    .udb-kv div { display: flex; flex-wrap: wrap; gap: 8px; }
+    .udb-kv dt { font-weight: 700; color: #6b7280; min-width: 120px; }
+    .udb-kv dd { margin: 0; flex: 1; }
+    .udb-cart-row {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+    }
+    .udb-cart-row:last-child { border-bottom: 0; }
+    .udb-cart-row img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #f3f4f6;
+    }
+    .udb-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .udb-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      background: #2b2b36;
+      color: #fff;
+    }
+    .udb-actions a.secondary {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+    .udb-empty {
+      color: #6b7280;
+      font-size: 14px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Welcome to our store</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <a href="index.html" class="icon-btn checkout-back-btn" target="_self" aria-label="Home" title="Home">Home</a>
+      <a href="login.html" class="icon-btn" id="login-nav-btn" aria-label="Login" title="Login" style="text-decoration:none; font-weight:600; font-size:14px; padding:6px 12px;">Login</a>
+      <div class="menu-container" id="user-menu-container" style="display:none;">
+        <button class="icon-btn" id="user-btn" aria-label="Account" title="Account">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="user-dropdown-menu">
+          <div class="menu-item" style="font-weight:700; color:#1f2937; cursor:default;" id="user-name-display">User</div>
+          <a href="user-data-base.html" class="menu-item" target="_self">My data</a>
+          <a href="#" class="menu-item" id="logout-link">Logout</a>
+        </div>
+      </div>
+      <a href="checkout.html" class="icon-btn cart-btn" aria-label="Cart" title="Cart" target="_self">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 12.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="udb-wrap" id="udb-root">
+    <p class="udb-empty" id="udb-loading">Loading your account…</p>
+  </main>
+
+  <script src="js/tokyo-auth.js"></script>
+  <script>
+    (function () {
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function initials(name, email) {
+        var n = String(name || '').trim();
+        if (n.length >= 2) return n.slice(0, 2).toUpperCase();
+        if (n.length === 1) return n.toUpperCase();
+        var e = String(email || '').trim();
+        if (e.length >= 2) return e.slice(0, 2).toUpperCase();
+        return '?';
+      }
+
+      function parseCart() {
+        var raw = null;
+        try {
+          if (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB.get) {
+            raw = TokyoPicksDB.get('tokyo_cart_items');
+          }
+        } catch (e) {}
+        if (raw == null) {
+          try {
+            raw = localStorage.getItem('tokyo_cart_items');
+          } catch (e2) {}
+        }
+        if (!raw) return [];
+        try {
+          var arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        } catch (e3) {
+          return [];
+        }
+      }
+
+      TokyoPicksAuth.mountNav({
+        mergeCartOnLoad: true,
+        hookCartSave: true,
+        logoutRedirect: 'index.html'
+      });
+
+      var user = TokyoPicksSession.getUser();
+      var root = document.getElementById('udb-root');
+
+      if (!user || !user.email) {
+        window.location.replace('login.html');
+        return;
+      }
+
+      if (typeof TokyoPicksSession.restoreAllData === 'function') {
+        TokyoPicksSession.restoreAllData(user);
+      }
+
+      var cart = parseCart();
+      var totalQty = cart.reduce(function (s, it) {
+        return s + (Number(it.quantity) || 0);
+      }, 0);
+
+      var when = user.loggedInAt
+        ? new Date(user.loggedInAt).toLocaleString()
+        : '—';
+
+      var cartHtml = '';
+      if (!cart.length) {
+        cartHtml = '<p class="udb-empty">Your cart is empty.</p>';
+      } else {
+        cartHtml = cart.map(function (it) {
+          var q = Number(it.quantity) || 0;
+          return (
+            '<div class="udb-cart-row">' +
+            '<img src="' + esc(it.image || '') + '" alt="">' +
+            '<div><strong>' + esc(it.title || 'Item') + '</strong><br>' +
+            esc(it.price || '') + ' · Qty ' + q +
+            '</div></div>'
+          );
+        }).join('');
+      }
+
+      root.innerHTML =
+        '<div class="udb-hero">' +
+        '<div class="udb-avatar" aria-hidden="true">' + esc(initials(user.name, user.email)) + '</div>' +
+        '<div>' +
+        '<h1>Signed in as ' + esc(user.name || user.email) + '</h1>' +
+        '<p>' + esc(user.email) + '</p>' +
+        '</div></div>' +
+        '<section class="udb-panel"><h2>Your details</h2>' +
+        '<dl class="udb-kv">' +
+        '<div><dt>Display name</dt><dd>' + esc(user.name || '—') + '</dd></div>' +
+        '<div><dt>Email</dt><dd>' + esc(user.email) + '</dd></div>' +
+        '<div><dt>Signed in</dt><dd>' + esc(when) + '</dd></div>' +
+        '<div><dt>Cart items</dt><dd>' + totalQty + ' total</dd></div>' +
+        '</dl></section>' +
+        '<section class="udb-panel"><h2>Your cart</h2>' + cartHtml + '</section>' +
+        '<div class="udb-actions">' +
+        '<a href="index.html" target="_self">Continue shopping</a>' +
+        '<a href="checkout.html" class="secondary" target="_self">Go to checkout</a>' +
+        '</div>';
+    })();
+  </script>
+</body>
+</html>

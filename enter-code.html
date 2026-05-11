@@ -177,7 +177,7 @@
           sessionStorage.removeItem('tokyo_pending_otp');
         } catch (e0) {}
         if (db && db.remove) db.remove('tokyo_pending_otp');
-        window.location.href = 'index.html';
+        window.location.href = 'user-data-base.html';
       }
 
       const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;

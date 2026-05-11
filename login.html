@@ -238,7 +238,7 @@
         if (db && db.setJSON) db.setJSON('tokyo_current_user', payload);
         else localStorage.setItem('tokyo_current_user', JSON.stringify(payload));
         restoreCartForEmail(user.email);
-        window.location.href = 'index.html';
+        window.location.href = 'user-data-base.html';
       }
 
       function deliverCodeInsideWebsite(email, code) {
