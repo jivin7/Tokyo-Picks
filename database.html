@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokyo Picks — Data & backup</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .db-page { max-width: 960px; margin: 32px auto; padding: 0 20px 48px; }
+    .db-page h1 { font-size: 26px; color: #111827; margin: 0 0 8px; }
+    .db-lead { color: #6b7280; font-size: 15px; margin-bottom: 24px; line-height: 1.5; }
+    .db-panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .db-panel h2 { font-size: 17px; margin: 0 0 14px; color: #1f2937; }
+    .db-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .db-btn {
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: #2b2b36;
+      color: #fff;
+    }
+    .db-btn.secondary { background: #4b5563; }
+    .db-btn.danger { background: #b91c1c; }
+    .db-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .db-msg {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .db-msg.show { display: block; }
+    .db-msg.ok { background: #d1fae5; color: #065f46; }
+    .db-msg.err { background: #fee2e2; color: #991b1b; }
+    .db-msg.info { background: #e0e7ff; color: #3730a3; }
+    .db-table-wrap { overflow-x: auto; margin-top: 8px; }
+    table.db-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .db-table th, .db-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    .db-table th { color: #374151; font-weight: 600; background: #f9fafb; }
+    .db-table code { font-size: 12px; word-break: break-all; }
+    .db-meta { font-size: 13px; color: #6b7280; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+    .db-input { padding: 8px 10px; border-radius: 8px; border: 1px solid #d1d5db; min-width: 200px; }
+    textarea.db-dump {
+      width: 100%;
+      min-height: 180px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+    }
+    .db-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #eef2ff; color: #4338ca; }
+  </style>
+</head>
+<body>
+  <div class="announcement" role="status"><span class="announcement-text">Data tools — keep this page private</span></div>
+  <header class="top-nav">
+    <div class="logo">Tokyo Picks</div>
+    <div class="nav-right">
+      <a href="index.html" class="icon-btn checkout-back-btn" target="_self">Home</a>
+      <a href="login.html" class="icon-btn" target="_self" style="text-decoration:none; font-weight:600; font-size:14px; padding:6px 12px;">Login</a>
+    </div>
+  </header>
+
+  <main class="db-page">
+    <h1>Site database</h1>
+    <p class="db-lead">
+      This page manages the <strong>browser-side</strong> store your shop uses (<code>tokyo_*</code> keys).
+      It adds <strong>schema version</strong>, <strong>validation</strong>, <strong>integrity checks</strong>, and <strong>backup / restore</strong>.
+      For a database shared by every phone and laptop, you still need a hosted server + real database later.
+    </p>
+
+    <div id="db-flash" class="db-msg" role="status"></div>
+
+    <section class="db-panel">
+      <h2>Status <span class="db-badge" id="db-version-label"></span></h2>
+      <p class="db-meta" id="db-status-text"></p>
+      <div class="db-row">
+        <button type="button" class="db-btn" id="db-btn-migrate">Run migrations &amp; repair</button>
+        <button type="button" class="db-btn secondary" id="db-btn-integrity">Run integrity check</button>
+      </div>
+    </section>
+
+    <section class="db-panel">
+      <h2>Accounts</h2>
+      <div class="db-row">
+        <input class="db-input" type="email" id="db-new-email" placeholder="email@example.com" autocomplete="off">
+        <input class="db-input" type="text" id="db-new-name" placeholder="Display name" autocomplete="off">
+        <input class="db-input" type="password" id="db-new-pass" placeholder="Password (min 6)" autocomplete="new-password">
+        <button type="button" class="db-btn" id="db-btn-add-user">Add / update user</button>
+      </div>
+      <div class="db-table-wrap">
+        <table class="db-table" id="db-users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="db-users-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="db-panel">
+      <h2>Current session</h2>
+      <p class="db-meta" id="db-session-text"></p>
+      <div class="db-row">
+        <button type="button" class="db-btn danger" id="db-btn-clear-session">Clear session (logout)</button>
+      </div>
+    </section>
+
+    <section class="db-panel">
+      <h2>Backup &amp; restore</h2>
+      <p class="db-lead" style="margin-bottom:12px;">
+        Exports all <code>tokyo_*</code> keys from local storage (and Tokyo session keys from session storage). Restoring merges into this browser.
+      </p>
+      <div class="db-row">
+        <button type="button" class="db-btn" id="db-btn-export">Copy backup JSON</button>
+        <button type="button" class="db-btn secondary" id="db-btn-download">Download backup</button>
+      </div>
+      <textarea class="db-dump" id="db-dump-area" placeholder="Paste backup JSON here to restore…"></textarea>
+      <div class="db-row" style="margin-top:12px;">
+        <button type="button" class="db-btn" id="db-btn-import">Restore from text above</button>
+        <label class="db-btn secondary" style="display:inline-block;">
+          Pick file
+          <input type="file" id="db-file-import" accept=".json,application/json" style="display:none;">
+        </label>
+      </div>
+    </section>
+
+    <section class="db-panel">
+      <h2>Raw keys (read-only)</h2>
+      <p class="db-meta" id="db-keys-text"></p>
+    </section>
+  </main>
+
+  <script src="js/tokyo-auth.js"></script>
+  <script>
+(function () {
+  'use strict';
+
+  var DB = (function () {
+    var SCHEMA_VERSION = 2;
+    var KEY_META = 'tokyo_db_meta';
+    var KEY_USERS = 'tokyo_users';
+
+    function storage() {
+      return (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) ? TokyoPicksDB : null;
+    }
+
+    function getMeta() {
+      var s = storage();
+      if (s && s.getJSON) return s.getJSON(KEY_META, null) || defaultMeta();
+      try {
+        var r = localStorage.getItem(KEY_META);
+        return r ? JSON.parse(r) : defaultMeta();
+      } catch (e) {
+        return defaultMeta();
+      }
+    }
+
+    function defaultMeta() {
+      return { schemaVersion: 0, updatedAt: 0, lastIntegrityOk: null, lastIntegrityAt: null };
+    }
+
+    function setMeta(meta) {
+      meta.updatedAt = Date.now();
+      var s = storage();
+      if (s && s.setJSON) s.setJSON(KEY_META, meta);
+      else localStorage.setItem(KEY_META, JSON.stringify(meta));
+    }
+
+    function getUsersRaw() {
+      var s = storage();
+      if (s && s.getJSON) return s.getJSON(KEY_USERS, {});
+      try {
+        var r = localStorage.getItem(KEY_USERS);
+        return r ? JSON.parse(r) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function setUsersRaw(users) {
+      var s = storage();
+      if (s && s.setJSON) s.setJSON(KEY_USERS, users);
+      else localStorage.setItem(KEY_USERS, JSON.stringify(users));
+    }
+
+    function normalizeEmail(email) {
+      return String(email || '').trim().toLowerCase();
+    }
+
+    function validateUserRecord(u) {
+      if (!u || typeof u !== 'object') return 'Invalid user object';
+      if (!normalizeEmail(u.email)) return 'Missing email';
+      if (!String(u.name || '').trim()) return 'Missing name';
+      if (!String(u.password || '') || String(u.password).length < 6) return 'Password must be at least 6 characters';
+      return null;
+    }
+
+    function migrate() {
+      var meta = getMeta();
+      var users = getUsersRaw();
+      var changed = false;
+
+      if (!meta || typeof meta.schemaVersion !== 'number') {
+        meta = defaultMeta();
+        changed = true;
+      }
+
+      if (meta.schemaVersion < 1) {
+        if (!users || typeof users !== 'object' || Array.isArray(users)) {
+          users = {};
+          changed = true;
+        }
+        meta.schemaVersion = 1;
+        changed = true;
+      }
+
+      if (meta.schemaVersion < 2) {
+        var email;
+        var next = {};
+        for (email in users) {
+          if (!Object.prototype.hasOwnProperty.call(users, email)) continue;
+          var row = users[email];
+          if (!row || typeof row !== 'object') continue;
+          var ne = normalizeEmail(row.email || email);
+          if (!ne) continue;
+          next[ne] = {
+            email: ne,
+            name: String(row.name || '').trim() || ne.split('@')[0],
+            password: String(row.password || ''),
+            createdAt: typeof row.createdAt === 'number' ? row.createdAt : Date.now()
+          };
+        }
+        users = next;
+        meta.schemaVersion = 2;
+        changed = true;
+      }
+
+      if (changed) {
+        setUsersRaw(users);
+        setMeta(meta);
+      }
+      return meta;
+    }
+
+    function integrity() {
+      var issues = [];
+      var users = getUsersRaw();
+      if (!users || typeof users !== 'object' || Array.isArray(users)) {
+        issues.push('tokyo_users is not an object');
+        return issues;
+      }
+      var k;
+      for (k in users) {
+        if (!Object.prototype.hasOwnProperty.call(users, k)) continue;
+        var u = users[k];
+        var err = validateUserRecord(u);
+        if (err) issues.push('User key "' + k + '": ' + err);
+        if (u && normalizeEmail(u.email) !== k) {
+          issues.push('User key "' + k + '" does not match email field "' + (u && u.email) + '"');
+        }
+      }
+      var meta = getMeta();
+      if (!meta || meta.schemaVersion !== SCHEMA_VERSION) {
+        issues.push('Schema version mismatch (expected ' + SCHEMA_VERSION + ', got ' + (meta && meta.schemaVersion) + ')');
+      }
+      return issues;
+    }
+
+    function listUsers() {
+      migrate();
+      return getUsersRaw();
+    }
+
+    function upsertUser(email, name, password) {
+      migrate();
+      var ne = normalizeEmail(email);
+      var rec = {
+        email: ne,
+        name: String(name || '').trim(),
+        password: String(password || ''),
+        createdAt: Date.now()
+      };
+      var err = validateUserRecord(rec);
+      if (err) throw new Error(err);
+      var users = getUsersRaw();
+      if (users[ne] && users[ne].createdAt) rec.createdAt = users[ne].createdAt;
+      users[ne] = rec;
+      setUsersRaw(users);
+      var meta = getMeta();
+      meta.schemaVersion = SCHEMA_VERSION;
+      setMeta(meta);
+    }
+
+    function deleteUser(email) {
+      migrate();
+      var ne = normalizeEmail(email);
+      var users = getUsersRaw();
+      delete users[ne];
+      setUsersRaw(users);
+    }
+
+    function collectTokyoSnapshot() {
+      var out = { exportedAt: Date.now(), schemaVersion: SCHEMA_VERSION, keys: {} };
+      var i;
+      var k;
+      try {
+        for (i = 0; i < localStorage.length; i++) {
+          k = localStorage.key(i);
+          if (k && k.indexOf('tokyo_') === 0) {
+            out.keys[k] = localStorage.getItem(k);
+          }
+        }
+      } catch (e1) {}
+      try {
+        for (i = 0; i < sessionStorage.length; i++) {
+          k = sessionStorage.key(i);
+          if (k && k.indexOf('tokyo_') === 0) {
+            out.keys['session:' + k] = sessionStorage.getItem(k);
+          }
+        }
+      } catch (e2) {}
+      return out;
+    }
+
+    function restoreSnapshot(data) {
+      if (!data || !data.keys || typeof data.keys !== 'object') throw new Error('Invalid backup: missing keys');
+      var k;
+      var v;
+      var s = storage();
+      for (k in data.keys) {
+        if (!Object.prototype.hasOwnProperty.call(data.keys, k)) continue;
+        v = data.keys[k];
+        if (typeof v !== 'string') continue;
+        if (k.indexOf('session:') === 0) {
+          var sk = k.slice('session:'.length);
+          try {
+            sessionStorage.setItem(sk, v);
+          } catch (e) {}
+        } else {
+          if (s && s.set) s.set(k, v);
+          else {
+            try {
+              localStorage.setItem(k, v);
+            } catch (e2) {}
+          }
+        }
+      }
+      migrate();
+    }
+
+    function clearSession() {
+      var s = storage();
+      if (s && s.remove) {
+        s.remove('tokyo_current_user');
+        s.remove('tokyo_cart_items');
+      } else {
+        try {
+          localStorage.removeItem('tokyo_current_user');
+          localStorage.removeItem('tokyo_cart_items');
+        } catch (e) {}
+      }
+      try {
+        sessionStorage.removeItem('tokyo_pending_otp');
+      } catch (e2) {}
+    }
+
+    return {
+      SCHEMA_VERSION: SCHEMA_VERSION,
+      KEY_META: KEY_META,
+      KEY_USERS: KEY_USERS,
+      migrate: migrate,
+      integrity: integrity,
+      listUsers: listUsers,
+      upsertUser: upsertUser,
+      deleteUser: deleteUser,
+      collectTokyoSnapshot: collectTokyoSnapshot,
+      restoreSnapshot: restoreSnapshot,
+      clearSession: clearSession,
+      setMeta: setMeta,
+      getMeta: getMeta
+    };
+  })();
+
+  window.TokyoPicksSiteDB = DB;
+
+  var flashEl = document.getElementById('db-flash');
+  function flash(kind, text) {
+    flashEl.className = 'db-msg show ' + (kind === 'ok' ? 'ok' : kind === 'err' ? 'err' : 'info');
+    flashEl.textContent = text;
+  }
+
+  function render() {
+    DB.migrate();
+    var meta = DB.getMeta();
+    document.getElementById('db-version-label').textContent = 'schema v' + DB.SCHEMA_VERSION;
+    document.getElementById('db-status-text').textContent =
+      'Stored meta: ' + JSON.stringify(meta, null, 2);
+
+    var users = DB.listUsers();
+    var tbody = document.getElementById('db-users-body');
+    tbody.innerHTML = '';
+    var emails = Object.keys(users).sort();
+    if (!emails.length) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="4">No accounts yet. Register on the site or add one above.</td>';
+      tbody.appendChild(tr);
+    } else {
+      emails.forEach(function (em) {
+        var u = users[em];
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><code>' + escapeHtml(u.email) + '</code></td>' +
+          '<td>' + escapeHtml(u.name) + '</td>' +
+          '<td>' + (u.createdAt ? new Date(u.createdAt).toLocaleString() : '—') + '</td>' +
+          '<td><button type="button" class="db-btn danger db-del" data-email="' + escapeHtml(u.email) + '">Delete</button></td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    tbody.querySelectorAll('.db-del').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var em = btn.getAttribute('data-email');
+        if (!confirm('Delete account ' + em + '?')) return;
+        DB.deleteUser(em);
+        flash('ok', 'Deleted ' + em);
+        render();
+      });
+    });
+
+    var session = null;
+    try {
+      if (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB.getJSON) {
+        session = TokyoPicksDB.getJSON('tokyo_current_user', null);
+      } else {
+        var sr = localStorage.getItem('tokyo_current_user');
+        session = sr ? JSON.parse(sr) : null;
+      }
+    } catch (e) {
+      session = null;
+    }
+    document.getElementById('db-session-text').textContent = session
+      ? JSON.stringify(session, null, 2)
+      : '(not logged in)';
+
+    var keys = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('tokyo_') === 0) keys.push(k);
+      }
+    } catch (e2) {}
+    keys.sort();
+    document.getElementById('db-keys-text').textContent = keys.length ? keys.join('\n') : '(none)';
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  document.getElementById('db-btn-migrate').addEventListener('click', function () {
+    DB.migrate();
+    flash('ok', 'Migrations finished.');
+    render();
+  });
+
+  document.getElementById('db-btn-integrity').addEventListener('click', function () {
+    var issues = DB.integrity();
+    var meta = DB.getMeta();
+    meta.lastIntegrityOk = issues.length === 0;
+    meta.lastIntegrityAt = Date.now();
+    DB.setMeta(meta);
+    if (issues.length) {
+      flash('err', issues.join(' | '));
+    } else {
+      flash('ok', 'Integrity check passed.');
+    }
+    render();
+  });
+
+  document.getElementById('db-btn-add-user').addEventListener('click', function () {
+    var email = document.getElementById('db-new-email').value;
+    var name = document.getElementById('db-new-name').value;
+    var pass = document.getElementById('db-new-pass').value;
+    try {
+      DB.upsertUser(email, name, pass);
+      flash('ok', 'User saved.');
+      document.getElementById('db-new-pass').value = '';
+      render();
+    } catch (err) {
+      flash('err', (err && err.message) || 'Save failed');
+    }
+  });
+
+  document.getElementById('db-btn-clear-session').addEventListener('click', function () {
+    DB.clearSession();
+    flash('ok', 'Session cleared.');
+    render();
+  });
+
+  document.getElementById('db-btn-export').addEventListener('click', function () {
+    var snap = DB.collectTokyoSnapshot();
+    var text = JSON.stringify(snap, null, 2);
+    document.getElementById('db-dump-area').value = text;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        flash('ok', 'Copied backup to clipboard.');
+      }).catch(function () {
+        flash('info', 'Backup is in the text area — copy manually.');
+      });
+    } else {
+      flash('info', 'Backup is in the text area — copy manually.');
+    }
+  });
+
+  document.getElementById('db-btn-download').addEventListener('click', function () {
+    var snap = DB.collectTokyoSnapshot();
+    var blob = new Blob([JSON.stringify(snap, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tokyo-picks-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    flash('ok', 'Download started.');
+  });
+
+  document.getElementById('db-btn-import').addEventListener('click', function () {
+    var raw = document.getElementById('db-dump-area').value.trim();
+    if (!raw) {
+      flash('err', 'Paste JSON first.');
+      return;
+    }
+    try {
+      var data = JSON.parse(raw);
+      DB.restoreSnapshot(data);
+      flash('ok', 'Restore complete. Run integrity check to verify.');
+      render();
+    } catch (err) {
+      flash('err', (err && err.message) || 'Invalid JSON');
+    }
+  });
+
+  document.getElementById('db-file-import').addEventListener('change', function (ev) {
+    var file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        document.getElementById('db-dump-area').value = String(reader.result || '');
+        flash('info', 'File loaded into the text area — click Restore if it looks correct.');
+      } catch (e) {
+        flash('err', 'Could not read file.');
+      }
+      ev.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  render();
+})();
+  </script>
+</body>
+</html>

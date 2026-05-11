@@ -277,9 +277,12 @@
         loginBtn.disabled = true;
         deliverCodeInsideWebsite(email, code)
           .then(function () {
+            const pendingStr = JSON.stringify(payload);
             const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
+            try {
+              sessionStorage.setItem('tokyo_pending_otp', pendingStr);
+            } catch (e1) {}
             if (db && db.setJSON) db.setJSON('tokyo_pending_otp', payload);
-            else sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(payload));
             showSuccess('Code generated. Redirecting to enter code...');
             setTimeout(function () {
               window.location.href = 'enter-code.html';

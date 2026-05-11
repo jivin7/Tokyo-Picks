@@ -173,13 +173,21 @@
         if (typeof TokyoPicksSession !== 'undefined' && TokyoPicksSession.restoreAllData) {
           TokyoPicksSession.restoreAllData(user);
         }
+        try {
+          sessionStorage.removeItem('tokyo_pending_otp');
+        } catch (e0) {}
         if (db && db.remove) db.remove('tokyo_pending_otp');
-        else sessionStorage.removeItem('tokyo_pending_otp');
         window.location.href = 'index.html';
       }
 
       const db = (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB) || null;
-      const pendingRaw = db && db.get ? db.get('tokyo_pending_otp') : sessionStorage.getItem('tokyo_pending_otp');
+      var pendingRaw = null;
+      try {
+        pendingRaw = sessionStorage.getItem('tokyo_pending_otp');
+      } catch (e0) {}
+      if (!pendingRaw && db && db.get) {
+        pendingRaw = db.get('tokyo_pending_otp');
+      }
       if (!pendingRaw) {
         showError('No pending login request. Please sign in first.');
       }
@@ -211,8 +219,10 @@
           return;
         }
         if (Date.now() > Number(pending.expiresAt)) {
+          try {
+            sessionStorage.removeItem('tokyo_pending_otp');
+          } catch (e0) {}
           if (db && db.remove) db.remove('tokyo_pending_otp');
-          else sessionStorage.removeItem('tokyo_pending_otp');
           showError('Code expired. Please sign in again.');
           return;
         }
@@ -247,8 +257,10 @@
             pending.code = newCode;
             pending.expiresAt = Date.now() + OTP_TTL_MS;
             pending.sentAt = Date.now();
+            try {
+              sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(pending));
+            } catch (e0) {}
             if (db && db.setJSON) db.setJSON('tokyo_pending_otp', pending);
-            else sessionStorage.setItem('tokyo_pending_otp', JSON.stringify(pending));
             errorEl.classList.remove('show');
             subtitleEl.textContent =
               'New code generated for ' + pending.email + '. Current code: ' + pending.code;
