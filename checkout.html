@@ -53,9 +53,6 @@
     </aside>
   </main>
 
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="js/firebase-init.js"></script>
   <script src="js/tokyo-auth.js"></script>
   <script>
     (function () {
@@ -164,13 +161,7 @@
         attachListeners();
       }
 
-      if (TokyoPicksSession.usesFirebase()) {
-        firebase.auth().onAuthStateChanged(function () {
-          bootCheckout();
-        });
-      } else {
-        bootCheckout();
-      }
+      bootCheckout();
 
       TokyoPicksAuth.mountNav({
         mergeCartOnLoad: false,

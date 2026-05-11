@@ -161,9 +161,6 @@
     </div>
   </main>
 
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="js/firebase-init.js"></script>
   <script src="js/tokyo-auth.js"></script>
   <script>
     (function() {
@@ -217,22 +214,6 @@
         }, 1500);
       }
 
-      function firebaseRegister(name, email, password) {
-        firebase.auth().createUserWithEmailAndPassword(email, password)
-          .then(function (cred) {
-            return cred.user.updateProfile({ displayName: name });
-          })
-          .then(function () {
-            showSuccess('Account created! Redirecting...');
-            setTimeout(function () {
-              window.location.href = 'index.html';
-            }, 800);
-          })
-          .catch(function (err) {
-            showError(TokyoPicksAuth.formatFirebaseError(err));
-          });
-      }
-
       registerBtn.addEventListener('click', function () {
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
@@ -254,11 +235,7 @@
           return;
         }
 
-        if (TokyoPicksSession.usesFirebase()) {
-          firebaseRegister(name, email, password);
-        } else {
-          legacyRegister(name, email, password);
-        }
+        legacyRegister(name, email, password);
       });
     })();
   </script>
