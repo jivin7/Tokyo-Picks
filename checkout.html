@@ -139,7 +139,21 @@
 
         checkoutBtn.addEventListener('click', () => {
           alert('Order placed successfully!');
-          localStorage.removeItem('tokyo_cart_items');
+          const empty = '[]';
+          localStorage.setItem('tokyo_cart_items', empty);
+          if (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB.set) {
+            TokyoPicksDB.set('tokyo_cart_items', empty);
+            const u = TokyoPicksSession && TokyoPicksSession.getUser && TokyoPicksSession.getUser();
+            if (u && u.email) {
+              TokyoPicksDB.set('tokyo_cart_' + u.email, empty);
+              if (TokyoPicksDB.setJSON) {
+                TokyoPicksDB.setJSON('tokyo_user_state_' + u.email, {
+                  cartItems: empty,
+                  updatedAt: Date.now()
+                });
+              }
+            }
+          }
           renderCheckout();
         });
 

@@ -92,6 +92,36 @@
     return 'tokyo_user_state_' + email;
   }
 
+  function parseCartItems(raw) {
+    if (raw == null || raw === '') return [];
+    try {
+      var a = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return Array.isArray(a) ? a : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function mergeCartByTitle(baseArr, extraArr) {
+    var out = baseArr.map(function (item) {
+      return Object.assign({}, item, { quantity: Number(item.quantity) || 1 });
+    });
+    extraArr.forEach(function (bi) {
+      var t = bi.title || '';
+      var ex = null;
+      for (var i = 0; i < out.length; i++) {
+        if ((out[i].title || '') === t) {
+          ex = out[i];
+          break;
+        }
+      }
+      var q = Number(bi.quantity) || 1;
+      if (ex) ex.quantity = (Number(ex.quantity) || 1) + q;
+      else out.push(Object.assign({}, bi, { quantity: q }));
+    });
+    return out;
+  }
+
   function saveUserState(user) {
     if (!user || !user.email) return;
     var cart = getRaw('tokyo_cart_items') || '[]';
@@ -107,13 +137,41 @@
 
   function restoreUserState(user) {
     if (!user || !user.email) return;
+    var guestItems = parseCartItems(getRaw('tokyo_cart_items'));
     var state = getJSON(getUserStateKey(user.email), null);
-    if (!state) {
-      var legacyCart = getRaw('tokyo_cart_' + user.email);
-      setRaw('tokyo_cart_items', legacyCart || '[]');
-      return;
+    var userCartRaw = null;
+    if (state && state.cartItems != null) {
+      userCartRaw = state.cartItems;
     }
-    setRaw('tokyo_cart_items', state && state.cartItems ? state.cartItems : '[]');
+    if (userCartRaw == null) {
+      userCartRaw = getRaw('tokyo_cart_' + user.email) || '[]';
+    }
+    var userItems = parseCartItems(userCartRaw);
+
+    var lastLogout = null;
+    try {
+      lastLogout = global.sessionStorage
+        ? global.sessionStorage.getItem('tokyo_last_logout_email')
+        : null;
+    } catch (e0) {}
+
+    var merged;
+    if (lastLogout && lastLogout !== user.email) {
+      merged = userItems;
+    } else {
+      merged = mergeCartByTitle(userItems, guestItems);
+    }
+    try {
+      if (lastLogout) global.sessionStorage.removeItem('tokyo_last_logout_email');
+    } catch (e1) {}
+
+    var mergedStr = JSON.stringify(merged);
+    setRaw('tokyo_cart_items', mergedStr);
+    setRaw('tokyo_cart_' + user.email, mergedStr);
+    setJSON(getUserStateKey(user.email), {
+      cartItems: mergedStr,
+      updatedAt: Date.now()
+    });
   }
 
   global.TokyoPicksSession = {
@@ -167,10 +225,14 @@
     var user = global.TokyoPicksSession.getUser();
     if (user && user.email) {
       saveUserState(user);
+      try {
+        if (global.sessionStorage) {
+          global.sessionStorage.setItem('tokyo_last_logout_email', user.email);
+        }
+      } catch (e) {}
     }
 
     function finish() {
-      removeRaw('tokyo_cart_items');
       removeRaw('tokyo_current_user');
       if (opts.redirect) {
         window.location.href = opts.redirect;
