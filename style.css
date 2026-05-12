@@ -1753,6 +1753,15 @@ p {
   background: rgba(0,0,0,0.06);
 }
 
+#user-dropdown-menu #user-name-display {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#user-dropdown-menu #user-name-display:hover {
+  color: #746aff;
+}
+
 /* Auth pages shared styles */
 .auth-page {
   max-width: 420px;

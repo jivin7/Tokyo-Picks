@@ -193,7 +193,13 @@
     if (user) {
       if (userMenu) userMenu.style.display = 'inline-block';
       if (loginBtn) loginBtn.style.display = 'none';
-      if (userNameDisplay) userNameDisplay.textContent = user.name || user.email;
+      if (userNameDisplay) {
+        userNameDisplay.textContent = user.name || user.email;
+        userNameDisplay.setAttribute(
+          'aria-label',
+          'View profile: ' + (user.name || user.email)
+        );
+      }
     } else {
       if (userMenu) userMenu.style.display = 'none';
       if (loginBtn) loginBtn.style.display = 'inline-flex';

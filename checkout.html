@@ -22,7 +22,7 @@
           </svg>
         </button>
         <div class="dropdown-menu" id="user-dropdown-menu">
-          <div class="menu-item" style="font-weight:700; color:#1f2937; cursor:default;" id="user-name-display">User</div>
+          <a href="user-data-base.html" class="menu-item" id="user-name-display" target="_self" style="font-weight:700; color:#1f2937;">Account</a>
           <a href="#" class="menu-item" id="logout-link">Logout</a>
         </div>
       </div>
@@ -65,7 +65,13 @@
 
       function getStoredCartItems() {
         try {
-          const saved = localStorage.getItem('tokyo_cart_items');
+          let saved = null;
+          if (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB.get) {
+            saved = TokyoPicksDB.get('tokyo_cart_items');
+          }
+          if (saved == null) {
+            saved = localStorage.getItem('tokyo_cart_items');
+          }
           return saved ? JSON.parse(saved) : [];
         } catch (error) {
           return [];
@@ -73,7 +79,23 @@
       }
 
       function setStoredCartItems(items) {
-        localStorage.setItem('tokyo_cart_items', JSON.stringify(items));
+        const json = JSON.stringify(items);
+        if (typeof TokyoPicksDB !== 'undefined' && TokyoPicksDB.set) {
+          TokyoPicksDB.set('tokyo_cart_items', json);
+          const u =
+            typeof TokyoPicksSession !== 'undefined' &&
+            TokyoPicksSession.getUser &&
+            TokyoPicksSession.getUser();
+          if (u && u.email && TokyoPicksDB.setJSON) {
+            TokyoPicksDB.set('tokyo_cart_' + u.email, json);
+            TokyoPicksDB.setJSON('tokyo_user_state_' + u.email, {
+              cartItems: json,
+              updatedAt: Date.now()
+            });
+          }
+          return;
+        }
+        localStorage.setItem('tokyo_cart_items', json);
       }
 
       function parsePrice(priceText) {
@@ -83,16 +105,6 @@
 
       function money(value) {
         return `LE ${value.toFixed(2)} EGP`;
-      }
-
-      function mergeUserCartFromAuth() {
-        const u = TokyoPicksSession.getUser();
-        if (u && u.email) {
-          const uc = localStorage.getItem('tokyo_cart_' + u.email);
-          if (uc) {
-            localStorage.setItem('tokyo_cart_items', uc);
-          }
-        }
       }
 
       function renderCheckout() {
@@ -170,17 +182,17 @@
       }
 
       function bootCheckout() {
-        mergeUserCartFromAuth();
         renderCheckout();
         attachListeners();
       }
 
-      bootCheckout();
-
       TokyoPicksAuth.mountNav({
-        mergeCartOnLoad: false,
+        mergeCartOnLoad: true,
+        hookCartSave: true,
         logoutRedirect: 'index.html'
       });
+
+      bootCheckout();
     })();
   </script>
 </body>
