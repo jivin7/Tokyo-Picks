@@ -1730,8 +1730,8 @@ p {
 }
 
 
-/* User menu: hidden by default; updateNavUI sets display when a user is logged in */
-#user-menu-container {
+/* User menu: hidden by default (overrides .menu-container display). updateNavUI sets inline display when logged in. */
+.menu-container#user-menu-container {
   display: none;
 }
 
