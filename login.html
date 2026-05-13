@@ -117,7 +117,7 @@
     <div class="nav-right">
       <a href="index.html" class="icon-btn checkout-back-btn" aria-label="Back to home" title="Back to home">Back</a>
       <a href="login.html" class="icon-btn" id="login-nav-btn" aria-label="Log in" title="Log in">Log in</a>
-      <div class="menu-container" id="user-menu-container">
+      <div class="menu-container" id="user-menu-container" hidden>
         <button type="button" class="icon-btn" id="user-btn" aria-label="Account menu" title="Account">
           <svg class="nav-user-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="8" r="3.25"></circle>
@@ -306,7 +306,9 @@
     })();
   </script>
   <script>
-    TokyoPicksAuth.mountNav({ mergeCartOnLoad: false });
+    if (typeof TokyoPicksAuth !== 'undefined' && TokyoPicksAuth.mountNav) {
+      TokyoPicksAuth.mountNav({ mergeCartOnLoad: false });
+    }
   </script>
 </body>
 </html>

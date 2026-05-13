@@ -1730,10 +1730,7 @@ p {
 }
 
 
-/* User menu: hidden by default (overrides .menu-container display). updateNavUI sets inline display when logged in. */
-.menu-container#user-menu-container {
-  display: none;
-}
+/* Account block visibility: default is `hidden` on #user-menu-container in HTML; TokyoPicksAuth.updateNavUI toggles it. */
 
 #user-btn {
   border: 1px solid #d1d5db;

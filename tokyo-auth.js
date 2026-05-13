@@ -190,19 +190,17 @@
     var userMenu = document.getElementById('user-menu-container');
     var loginBtn = document.getElementById('login-nav-btn');
     var userNameDisplay = document.getElementById('user-name-display');
-    if (user) {
-      if (userMenu) userMenu.style.display = 'inline-block';
-      if (loginBtn) loginBtn.style.display = 'none';
-      if (userNameDisplay) {
-        userNameDisplay.textContent = user.name || user.email;
-        userNameDisplay.setAttribute(
-          'aria-label',
-          'View profile: ' + (user.name || user.email)
-        );
-      }
-    } else {
-      if (userMenu) userMenu.style.display = 'none';
-      if (loginBtn) loginBtn.style.display = 'inline-flex';
+    var loggedIn = !!(user && user.email);
+
+    if (userMenu) userMenu.hidden = !loggedIn;
+    if (loginBtn) loginBtn.hidden = loggedIn;
+
+    if (loggedIn && userNameDisplay) {
+      userNameDisplay.textContent = user.name || user.email;
+      userNameDisplay.setAttribute(
+        'aria-label',
+        'View profile: ' + (user.name || user.email)
+      );
     }
   }
 
