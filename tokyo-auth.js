@@ -187,13 +187,19 @@
   };
 
   function updateNavUI(user) {
-    var userMenu = document.getElementById('user-menu-container');
-    var loginBtn = document.getElementById('login-nav-btn');
+    var navAuth = document.getElementById('nav-auth');
     var userNameDisplay = document.getElementById('user-name-display');
     var loggedIn = !!(user && user.email);
 
-    if (userMenu) userMenu.hidden = !loggedIn;
-    if (loginBtn) loginBtn.hidden = loggedIn;
+    if (navAuth) {
+      navAuth.classList.remove('nav-auth--guest', 'nav-auth--user');
+      navAuth.classList.add(loggedIn ? 'nav-auth--user' : 'nav-auth--guest');
+    } else {
+      var userMenu = document.getElementById('user-menu-container');
+      var loginBtn = document.getElementById('login-nav-btn');
+      if (userMenu) userMenu.hidden = !loggedIn;
+      if (loginBtn) loginBtn.hidden = loggedIn;
+    }
 
     if (loggedIn && userNameDisplay) {
       userNameDisplay.textContent = user.name || user.email;

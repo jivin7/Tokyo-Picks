@@ -1730,7 +1730,23 @@ p {
 }
 
 
-/* Account block visibility: default is `hidden` on #user-menu-container in HTML; TokyoPicksAuth.updateNavUI toggles it. */
+/* Auth nav: exactly one of login vs profile (class on #nav-auth; beats .menu-container display). */
+.nav-auth {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-auth--guest #user-menu-container {
+  display: none !important;
+}
+
+.nav-auth--user #login-nav-btn {
+  display: none !important;
+}
+
+.nav-auth--user #user-menu-container {
+  display: inline-block !important;
+}
 
 #user-btn {
   border: 1px solid #d1d5db;
